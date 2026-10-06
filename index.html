@@ -93,7 +93,7 @@ main{flex:1;overflow:auto;padding:8px 16px 28px;-webkit-overflow-scrolling:touch
 
 /* memory */
 .mem{display:grid;gap:12px;width:100%;max-width:700px}
-.mc{aspect-ratio:1;border-radius:20px;border:5px solid #8453e0;background:#a67cf0;font-size:clamp(34px,8vw,60px);font-weight:bold;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.2);color:#fff}
+.mc{aspect-ratio:1;min-height:80px;border-radius:20px;border:5px solid #8453e0;background:#a67cf0;font-size:clamp(34px,8vw,60px);font-weight:bold;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.2);color:#fff}
 .mc.up{background:#fff;color:#2b2b4a;border-color:#ffa534}
 .mc.ok{background:#c8f5a8;border-color:#43a82b;color:#2b2b4a}
 .mc.sm{font-size:clamp(20px,4.5vw,34px)}
@@ -121,7 +121,7 @@ main{flex:1;overflow:auto;padding:8px 16px 28px;-webkit-overflow-scrolling:touch
 .bar{height:34px;border-radius:18px}
 .opt .grp span{font-size:clamp(22px,4.5vw,34px)}
 
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
 .panel{background:#fff;border-radius:24px;padding:20px;max-width:520px;width:100%;font-size:18px}
 .panel h2{margin:0 0 8px}
 .panel button{display:block;width:100%;margin:10px 0;padding:14px;font-size:18px;background:#3aa0e0}
@@ -309,9 +309,13 @@ async function renderPhon(key){
   const rms=Math.sqrt(sum/d.length)||1;const sc=Math.min(.14/rms,.9/(pk||1));for(let i=0;i<d.length;i++)d[i]*=sc;
   BUF[key]=b;
 }
-try{(async()=>{for(const k of Object.keys(PH))await renderPhon(k)})()}catch(e){}
+/* render sounds gently in the background (one at a time) so old tablets are not overloaded */
+const PENDING=Object.keys(PH);
+function bgRender(){const k=PENDING.shift();if(!k)return;(BUF[k]?Promise.resolve():renderPhon(k)).catch(()=>{}).then(()=>setTimeout(bgRender,120))}
+setTimeout(()=>{try{bgRender()}catch(e){}},2500);
+window.onerror=function(m){try{let b=document.getElementById('errb');if(!b){b=document.createElement('div');b.id='errb';b.style.cssText='position:fixed;left:0;right:0;bottom:0;background:#fff3b0;color:#900;font:12px monospace;padding:4px;z-index:99';document.body.appendChild(b)}b.textContent='Oops: '+m}catch(e){}};
 function synth(key){
-  const b=BUF[key];if(!b)return false;
+  const b=BUF[key];if(!b){if(PH[key])renderPhon(key).then(()=>synth(key)).catch(()=>{});return PH[key]?true:false}
   try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();speechSynthesis.cancel();
    const s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);s.start();return true}catch(e){return false}
 }
