@@ -1,6 +1,6 @@
 {
-  "name": "Fred's Learning Adventure",
-  "short_name": "Fred Phonics",
+  "name": "Zip's Learning Adventure",
+  "short_name": "Zip Phonics",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
