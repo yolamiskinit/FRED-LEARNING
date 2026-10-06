@@ -229,10 +229,16 @@ const sk=it=>it.snd||it.g;
 /* =================== AUDIO =================== */
 let voice=null;
 function pickVoice(){
-  const vs=speechSynthesis.getVoices();const gb=vs.filter(v=>/en[-_]GB/i.test(v.lang));
-  voice=gb.find(v=>/serena|kate|stephanie|google uk english female|martha/i.test(v.name))||gb.find(v=>/daniel|arthur|oliver/i.test(v.name))||gb[0]||vs.find(v=>/^en/i.test(v.lang))||null}
+  const vs=speechSynthesis.getVoices();const gb=vs.filter(v=>/en[-_]GB/i.test(v.lang)||/british|united kingdom|\buk\b/i.test(v.name));
+  const nice=v=>/premium|enhanced/i.test(v.name)?2:0;
+  gb.sort((a,b)=>nice(b)-nice(a));
+  voice=gb.find(v=>/serena|kate|stephanie|google uk english female|martha|hazel|susan|libby|sonia/i.test(v.name))||gb.find(v=>/daniel|arthur|oliver|george|ryan/i.test(v.name))||gb[0]||vs.find(v=>/^en/i.test(v.lang))||null}
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
-function tts(text,rate=.75){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(voice)u.voice=voice;u.lang='en-GB';u.rate=Math.max(.7,rate);u.pitch=1.05;speechSynthesis.speak(u)}catch(e){}}
+function tts(text,rate=.75){try{
+  if(!voice||!/en[-_]GB/i.test(voice.lang))pickVoice(); /* iPhones often load voices late, so look again each time */
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(voice)u.voice=voice;u.lang='en-GB';u.rate=Math.max(.7,rate);u.pitch=1.05;speechSynthesis.speak(u)}catch(e){}}
+const voiceInfo=()=>{try{pickVoice()}catch(e){}return voice?`${voice.name} (${voice.lang})`:'none found'};
+const voiceIsBritish=()=>!!(voice&&/en[-_]GB/i.test(voice.lang));
 /* recordings: your own voice, either saved on this device or shipped in sounds.json */
 let SHIP={};
 try{fetch('sounds.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{}).then(o=>{SHIP=o||{}}).catch(()=>{})}catch(e){}
@@ -724,6 +730,8 @@ function parentPanel(){
   <button class="btn" style="background:#e6397c" id="ss">🎙️ Open Sound Studio</button>
   <p>Or quick-record: turn on Record mode, then tap a card to record.</p>
   <button class="btn ${S.recMode?'on':''}" id="rm">${S.recMode?'⏺ Record mode is ON (tap to turn off)':'🎙 Turn on Record mode'}</button>
+  <p style="margin:6px 0"><b>Word voice:</b> ${voiceInfo()}${voiceIsBritish()?' ✅ British':' ⚠️ not British. On iPhone: Settings → Accessibility → Spoken Content → Voices → English → United Kingdom, then download Daniel, Kate or Serena. On Android: Settings → Text-to-speech → set English (United Kingdom).'}</p>
+  <button class="btn" style="background:#3aa0e0" id="tv">🔊 Test the word voice</button>
   <button class="btn" style="background:#2fb86a" id="hm">${store.get('noHuman',false)?'🔈 Using computer sounds (tap to use human sounds)':'🗣️ Using human sounds (tap to use computer sounds)'}</button>
   <button class="btn" style="background:#ff9a1f" id="rs">Reset stars</button>
   <button class="btn" style="background:#999" id="cl">Delete my recordings</button>
@@ -731,6 +739,7 @@ function parentPanel(){
   <p style="font-size:12px;color:#666">Credits: phoneme sound recordings from Wikimedia Commons (IPA audio by Peter Isotalo, Denelson83, Erutuon and others), licensed CC BY-SA 3.0 (one clip public domain). Trimmed, balanced and combined for this app; shared under the same licence. creativecommons.org/licenses/by-sa/3.0/</p></div></div>`;
   $('#rm').onclick=()=>{S.recMode=!S.recMode;m.innerHTML='';if(S.recMode)alert('Record mode ON. Tap any sound or tricky-word card to record your voice. Turn it off here when done.')};
   $('#ss').onclick=()=>{m.innerHTML='';nav(studio)};
+  $('#tv').onclick=()=>tts('Hello! Let us read the word schedule, and the word water.',.8);
   $('#hm').onclick=()=>{store.set('noHuman',!store.get('noHuman',false));m.innerHTML='';parentPanel()};
   $('#rs').onclick=()=>{S.stars=0;store.set('stars',0);m.innerHTML='';rerun()};
   $('#cl').onclick=()=>{S.recs={};store.set('recs',{});m.innerHTML=''};
