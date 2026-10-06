@@ -228,12 +228,37 @@ const sk=it=>it.snd||it.g;
 
 /* =================== AUDIO =================== */
 let voice=null;
-function pickVoice(){const vs=speechSynthesis.getVoices();voice=vs.find(v=>/en-GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}
+function pickVoice(){
+  const vs=speechSynthesis.getVoices();const gb=vs.filter(v=>/en[-_]GB/i.test(v.lang));
+  voice=gb.find(v=>/serena|kate|stephanie|google uk english female|martha/i.test(v.name))||gb.find(v=>/daniel|arthur|oliver/i.test(v.name))||gb[0]||vs.find(v=>/^en/i.test(v.lang))||null}
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
-function tts(text,rate=.75){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(voice)u.voice=voice;u.lang='en-GB';u.rate=rate;u.pitch=1.15;speechSynthesis.speak(u)}catch(e){}}
-let curAudio=null;
+function tts(text,rate=.75){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(voice)u.voice=voice;u.lang='en-GB';u.rate=Math.max(.7,rate);u.pitch=1.05;speechSynthesis.speak(u)}catch(e){}}
+/* recordings: your own voice, either saved on this device or shipped in sounds.json */
+let SHIP={};
+try{fetch('sounds.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{}).then(o=>{SHIP=o||{}}).catch(()=>{})}catch(e){}
+const recFor=key=>S.recs[key]||SHIP[key];
+const RECBUF={};let curSrc=null;
+function ac(){try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC}
+let OUT=null;
+function outNode(){if(!OUT||OUT.context!==AC){const g=AC.createGain();g.gain.value=1.6;const c=AC.createDynamicsCompressor();c.threshold.value=-20;c.knee.value=20;c.ratio.value=8;c.attack.value=.003;c.release.value=.15;g.connect(c);c.connect(AC.destination);OUT=g}return OUT}
+function decodeRec(key){
+  const u=recFor(key);if(!u)return Promise.reject();
+  if(RECBUF[key]&&RECBUF[key].src===u)return Promise.resolve();
+  return fetch(u).then(r=>r.arrayBuffer()).then(ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,b=>{RECBUF[key]={b,src:u};res()},rej)));
+}
+function playBuf(key){
+  const x=RECBUF[key];if(!x)return false;
+  try{ac();try{speechSynthesis.cancel()}catch(e){}try{curSrc&&curSrc.stop()}catch(e){}
+    const s=AC.createBufferSource();s.buffer=x.b;s.connect(outNode());s.start();curSrc=s;return true}catch(e){return false}
+}
+function playRec(key){
+  const u=recFor(key);if(!u)return false;
+  if(RECBUF[key]&&RECBUF[key].src===u)return playBuf(key);
+  decodeRec(key).then(()=>playBuf(key)).catch(()=>{});return true;
+}
+['touchstart','pointerdown','mousedown'].forEach(ev=>document.addEventListener(ev,()=>{try{ac()}catch(e){}},{passive:true}));
 function say(text,key,rate){
-  if(key&&S.recs[key]){try{curAudio&&curAudio.pause();curAudio=new Audio(S.recs[key]);curAudio.play();return}catch(e){}}
+  if(key&&playRec(key))return;
   tts(text,rate);
 }
 const sayWord=w=>say(w,'w:'+w,.75);
@@ -243,8 +268,8 @@ function beep(ok){try{AC=AC||new (window.AudioContext||window.webkitAudioContext
 const v=(s,d,a,b,g,G)=>({k:'v',s,d,a,b:b||a,g:g==null?1:g,G:G||[1,.6,.35]});
 const nz=(s,d,type,f,q,g,o)=>Object.assign({k:'n',s,d,type,f,q,g},o||{});
 const dip=(a,b,d1,d2)=>[v(0,d1,a),v(d1,d2,a,b)];
-const K=[nz(0,.06,'bandpass',2200,1,1.2,{burst:1}),nz(.01,.07,'bandpass',2000,1,.3)];
-const S_=[nz(0,.75,'highpass',5800,.7,1)],Z_=[nz(0,.75,'highpass',5000,.7,.8,{buzz:.6})],F_=[nz(0,.75,'bandpass',5000,.3,.6)],L_=[v(0,.7,[360,1000,2700],null,.9,[1,.5,.3])];
+const K=[nz(0,.07,'bandpass',2200,1,1.6,{burst:1}),nz(.01,.08,'bandpass',2000,1,.4)];
+const S_=[nz(0,.75,'highpass',5000,.7,1.1)],Z_=[nz(0,.75,'highpass',4500,.7,.9,{buzz:.7})],F_=[nz(0,.75,'bandpass',3500,.4,.9)],L_=[v(0,.7,[360,1000,2700],null,.9,[1,.5,.3])];
 const NG=d=>[v(0,d,[250,1200,2300],null,.8,[1,.2,.08])];
 const SCHWA=(s,d)=>v(s,d,[500,1450,1700],null,.8);
 const PH={
@@ -256,7 +281,7 @@ const PH={
  m:[v(0,.7,[250,1000,2200],null,.8,[1,.15,.05])],n:[v(0,.7,[250,1600,2500],null,.8,[1,.2,.1])],ng:NG(.7),
  l:L_,r:[v(0,.6,[400,1100,1500])],w:[v(0,.5,[300,700,2300],[500,1100,2400])],y:[v(0,.5,[280,2250,3000],[400,1900,2600])],
  s:S_,z:Z_,f:F_,v:[nz(0,.75,'bandpass',5000,.3,.5,{buzz:.5})],
- sh:[nz(0,.75,'bandpass',3000,1.2,1)],th:[nz(0,.75,'bandpass',6500,.3,.35)],h:[nz(0,.5,'bandpass',1800,.4,.6)],
+ sh:[nz(0,.75,'bandpass',3000,1.2,1)],th:[nz(0,.75,'bandpass',4500,.4,.6)],h:[nz(0,.5,'bandpass',1800,.4,.6)],
  p:[nz(0,.05,'bandpass',900,.7,1.2,{burst:1}),nz(.01,.06,'bandpass',1500,.8,.3)],
  t:[nz(0,.05,'highpass',3500,.8,1.2,{burst:1}),nz(.01,.06,'highpass',5000,.8,.25)],
  k:K,
@@ -279,7 +304,7 @@ const PH={
 Object.assign(PH,{c:K,ck:K,ai:PH.ay,ea:PH.ee,ey:PH.ee,y2:PH.ee,oi:PH.oy,aw:PH.or,ur:PH.ir,a_e:PH.ay,i_e:PH.igh,o_e:PH.oa,u_e:[v(0,.15,[280,2250,3000],[330,900,2300]),...PH.oo.map(x=>Object.assign({},x,{s:.15,d:.55}))],ie:PH.igh,y3:PH.igh,
  ue:PH.oo,ow:PH.oa,ow2:PH.ou,ou2:PH.oo,ea2:PH.e,are:PH.air,wh:PH.w,ph:PH.f,kn:PH.n,wr:PH.r,mb:PH.m,ce:S_,ge:PH.j,tch:PH.ch,dge:PH.j,
  tt:PH.t,pp:PH.p,nn:PH.n,bb:PH.b,ff:F_,ll:L_,ss:S_,zz:Z_,se:S_,q:PH.qu});
-const SR=22050,PITCH=210;
+const SR=44100,PITCH=205;
 function build(ctx,spec){
   const noise=ctx.createBuffer(1,SR,SR),nd=noise.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
   const master=ctx.createGain();master.connect(ctx.destination);
@@ -289,7 +314,8 @@ function build(ctx,spec){
     const t=sg.s+.02,d=sg.d;const e=ctx.createGain();e.connect(master);
     if(sg.k==='v'){
       const o=ctx.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(PITCH*1.04,t);o.frequency.linearRampToValueAtTime(PITCH*.9,t+d);
-      [6,9,12].forEach((q,i)=>{const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.Q.value=q;bp.frequency.setValueAtTime(sg.a[i],t);bp.frequency.linearRampToValueAtTime(sg.b[i],t+d);const g=ctx.createGain();g.gain.value=sg.G[i];o.connect(bp).connect(g).connect(e)});
+      const soft=ctx.createBiquadFilter();soft.type='lowpass';soft.frequency.value=3600;o.connect(soft);
+      [5,8,10].forEach((q,i)=>{const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.Q.value=q;bp.frequency.setValueAtTime(sg.a[i],t);bp.frequency.linearRampToValueAtTime(sg.b[i],t+d);const g=ctx.createGain();g.gain.value=sg.G[i]*(i===0?1.4:1);soft.connect(bp);bp.connect(g);g.connect(e)});
       o.start(t);o.stop(t+d+.05);env(e,t,d,false,sg.g*.5);
     }else{
       const src=ctx.createBufferSource();src.buffer=noise;src.loop=true;const f=ctx.createBiquadFilter();f.type=sg.type;f.frequency.value=sg.f;f.Q.value=sg.q;
@@ -306,7 +332,7 @@ async function renderPhon(key){
   build(oc,spec);
   const b=await oc.startRendering();const d=b.getChannelData(0);let sum=0,pk=0;
   for(let i=0;i<d.length;i++){sum+=d[i]*d[i];pk=Math.max(pk,Math.abs(d[i]))}
-  const rms=Math.sqrt(sum/d.length)||1;const sc=Math.min(.14/rms,.9/(pk||1));for(let i=0;i<d.length;i++)d[i]*=sc;
+  const rms=Math.sqrt(sum/d.length)||1;const sc=Math.min(.2/rms,.95/(pk||1));for(let i=0;i<d.length;i++)d[i]*=sc;
   BUF[key]=b;
 }
 /* render sounds gently in the background (one at a time) so old tablets are not overloaded */
@@ -316,12 +342,58 @@ setTimeout(()=>{try{bgRender()}catch(e){}},2500);
 window.onerror=function(m){try{let b=document.getElementById('errb');if(!b){b=document.createElement('div');b.id='errb';b.style.cssText='position:fixed;left:0;right:0;bottom:0;background:#fff3b0;color:#900;font:12px monospace;padding:4px;z-index:99';document.body.appendChild(b)}b.textContent='Oops: '+m}catch(e){}};
 function synth(key){
   const b=BUF[key];if(!b){if(PH[key])renderPhon(key).then(()=>synth(key)).catch(()=>{});return PH[key]?true:false}
-  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();speechSynthesis.cancel();
-   const s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);s.start();return true}catch(e){return false}
+  try{ac();try{speechSynthesis.cancel()}catch(e){}try{curSrc&&curSrc.stop()}catch(e){}
+   const s=AC.createBufferSource();s.buffer=b;s.connect(outNode());s.start();curSrc=s;return true}catch(e){return false}
 }
 function saySound(g){
-  if(S.recs['s:'+g]){say('','s:'+g);return}
+  if(playRec('s:'+g))return;
   if(!synth(g))say(disp(g),null,.6);
+}
+
+/* =================== SOUND STUDIO (record your own voice) =================== */
+function studioKeys(){
+  const keys=[],seen=new Set(),add=(k,w)=>{if(!seen.has(k)){seen.add(k);keys.push({k,w})}};
+  Object.values(SETS).forEach(s=>[...(s.sounds||[]),...(s.special||[]),...(s.chatty||[])].forEach(it=>add(sk(it),it.w)));
+  Object.values(SETS).forEach(s=>s.fred.forEach(f=>f.parts.forEach(p=>add(p,f.w))));
+  return keys;
+}
+function studio(){
+  const keys=studioKeys();let i=0,recording=null;
+  const d=el('<div class="game"></div>');
+  const have=k=>!!recFor('s:'+k);
+  function show(){
+    const x=keys[i],done=keys.filter(y=>have(y.k)).length;
+    d.innerHTML=`<div class="prog"><i style="width:${done/keys.length*100}%"></i></div>
+    <div class="prompt" style="cursor:default">Sound ${i+1} of ${keys.length} · ✅ ${done} recorded</div>
+    <div class="q" style="font-size:clamp(70px,16vw,130px);font-weight:bold;color:#d63a3a">${disp(x.k)}</div>
+    <div class="tip" style="font-size:20px">Say just the <b>sound</b> (like in <b>${x.w}</b>), not the letter name.<br>Short and clear, e.g. “mmm”, “sss”, “t” (no “uh”).</div>
+    <div class="row2"><button class="btn go" style="background:${recording?'#e62e2e':'#e6397c'}" id="rc">${recording?'⏹ Stop':'⏺ Record'}</button><button class="btn go" style="background:#3aa0e0" id="pl">▶ Play mine</button><button class="btn go" style="background:#999" id="ap">🤖 App sound</button></div>
+    <div class="row2"><button class="btn go" style="background:#8453e0" id="pv">⬅ Prev</button><button class="btn go" style="background:#43a82b" id="nx">Next ➡</button></div>
+    <div class="tip">${have(x.k)?'✅ Recorded':'⚪ Not recorded yet (the app sound is used)'}</div>
+    <button class="btn go" style="background:#ff9a1f" id="sv">💾 Save all to a file</button>`;
+    $('#rc').onclick=toggle;
+    $('#pl').onclick=()=>{if(!playRec('s:'+x.k))alert('Nothing recorded yet for this sound.')};
+    $('#ap').onclick=()=>{if(!synth(x.k))tts(disp(x.k),.6)};
+    $('#pv').onclick=()=>{i=(i-1+keys.length)%keys.length;show()};
+    $('#nx').onclick=()=>{i=(i+1)%keys.length;show()};
+    $('#sv').onclick=exportAll;
+  }
+  function toggle(){
+    const x=keys[i];
+    if(recording){recording.stop();return}
+    navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{
+      const mr=new MediaRecorder(st),chunks=[];recording=mr;
+      mr.ondataavailable=e=>chunks.push(e.data);
+      mr.onstop=()=>{st.getTracks().forEach(t=>t.stop());recording=null;const r=new FileReader();r.onload=()=>{S.recs['s:'+x.k]=r.result;store.set('recs',S.recs);beep(true);show();playRec('s:'+x.k)};r.readAsDataURL(new Blob(chunks,{type:mr.mimeType}))};
+      mr.start();show();setTimeout(()=>{if(recording===mr&&mr.state!=='inactive')mr.stop()},3000);
+    }).catch(()=>alert('Microphone not available. Please allow microphone access in your browser settings.'));
+  }
+  function exportAll(){
+    const o={};Object.keys(S.recs).forEach(k=>{o[k]=S.recs[k]});Object.keys(SHIP).forEach(k=>{if(!o[k])o[k]=SHIP[k]});
+    const blob=new Blob([JSON.stringify(o)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sounds.json';document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),500);
+    alert('Saved sounds.json. Upload it to your GitHub repository next to index.html so every device gets your voice.');
+  }
+  frame('Sound Studio 🎙️',d,{bg:'#fde8ee'});show();
 }
 
 function record(key,cardEl){
@@ -646,12 +718,15 @@ function mathsMenu(){
 function parentPanel(){
   const m=$('#modal');
   m.innerHTML=`<div class="modal"><div class="panel"><h2>👨‍👩‍👦 Grown-up corner</h2>
-  <p>Record <b>your own voice</b> for sounds and words: turn on Record mode, open a card screen (or Tricky Words) and tap a card to record 1.5 seconds.</p>
+  <p>For the clearest sounds, record <b>your own voice</b>. The Sound Studio walks you through every sound.</p>
+  <button class="btn" style="background:#e6397c" id="ss">🎙️ Open Sound Studio</button>
+  <p>Or quick-record: turn on Record mode, then tap a card to record.</p>
   <button class="btn ${S.recMode?'on':''}" id="rm">${S.recMode?'⏺ Record mode is ON (tap to turn off)':'🎙 Turn on Record mode'}</button>
   <button class="btn" style="background:#ff9a1f" id="rs">Reset stars</button>
   <button class="btn" style="background:#999" id="cl">Delete my recordings</button>
   <button class="btn" style="background:#43a82b" id="cx">Close</button></div></div>`;
   $('#rm').onclick=()=>{S.recMode=!S.recMode;m.innerHTML='';if(S.recMode)alert('Record mode ON. Tap any sound or tricky-word card to record your voice. Turn it off here when done.')};
+  $('#ss').onclick=()=>{m.innerHTML='';nav(studio)};
   $('#rs').onclick=()=>{S.stars=0;store.set('stars',0);m.innerHTML='';rerun()};
   $('#cl').onclick=()=>{S.recs={};store.set('recs',{});m.innerHTML=''};
   $('#cx').onclick=()=>m.innerHTML='';
