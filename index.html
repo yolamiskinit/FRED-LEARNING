@@ -236,7 +236,7 @@ function tts(text,rate=.75){try{speechSynthesis.cancel();const u=new SpeechSynth
 /* recordings: your own voice, either saved on this device or shipped in sounds.json */
 let SHIP={};
 try{fetch('sounds.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{}).then(o=>{SHIP=o||{}}).catch(()=>{})}catch(e){}
-const recFor=key=>S.recs[key]||SHIP[key];
+const recFor=key=>S.recs[key]||(store.get('noHuman',false)?null:SHIP[key]);
 const RECBUF={};let curSrc=null;
 function ac(){try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC}
 let OUT=null;
@@ -345,8 +345,10 @@ function synth(key){
   try{ac();try{speechSynthesis.cancel()}catch(e){}try{curSrc&&curSrc.stop()}catch(e){}
    const s=AC.createBufferSource();s.buffer=b;s.connect(outNode());s.start();curSrc=s;return true}catch(e){return false}
 }
+/* spellings that share one human recording */
+const ALIAS={c:'k',ck:'k',ai:'ay',a_e:'ay',ea:'ee',ey:'ee',y2:'ee',oi:'oy',aw:'or',ur:'ir',i_e:'igh',ie:'igh',y3:'igh',o_e:'oa',ow:'oa',u_e:'ew',ue:'oo',ou2:'oo',ow2:'ou',ea2:'e',are:'air',wh:'w',ph:'f',kn:'n',wr:'r',mb:'m',ce:'s',ss:'s',se:'s',ge:'j',dge:'j',tch:'ch',tt:'t',pp:'p',nn:'n',bb:'b',ff:'f',ll:'l',zz:'z',q:'qu'};
 function saySound(g){
-  if(playRec('s:'+g))return;
+  if(playRec('s:'+g)||playRec('s:'+(ALIAS[g]||g)))return;
   if(!synth(g))say(disp(g),null,.6);
 }
 
@@ -722,11 +724,14 @@ function parentPanel(){
   <button class="btn" style="background:#e6397c" id="ss">🎙️ Open Sound Studio</button>
   <p>Or quick-record: turn on Record mode, then tap a card to record.</p>
   <button class="btn ${S.recMode?'on':''}" id="rm">${S.recMode?'⏺ Record mode is ON (tap to turn off)':'🎙 Turn on Record mode'}</button>
+  <button class="btn" style="background:#2fb86a" id="hm">${store.get('noHuman',false)?'🔈 Using computer sounds (tap to use human sounds)':'🗣️ Using human sounds (tap to use computer sounds)'}</button>
   <button class="btn" style="background:#ff9a1f" id="rs">Reset stars</button>
   <button class="btn" style="background:#999" id="cl">Delete my recordings</button>
-  <button class="btn" style="background:#43a82b" id="cx">Close</button></div></div>`;
+  <button class="btn" style="background:#43a82b" id="cx">Close</button>
+  <p style="font-size:12px;color:#666">Credits: phoneme sound recordings from Wikimedia Commons (IPA audio by Peter Isotalo, Denelson83, Erutuon and others), licensed CC BY-SA 3.0 (one clip public domain). Trimmed, balanced and combined for this app; shared under the same licence. creativecommons.org/licenses/by-sa/3.0/</p></div></div>`;
   $('#rm').onclick=()=>{S.recMode=!S.recMode;m.innerHTML='';if(S.recMode)alert('Record mode ON. Tap any sound or tricky-word card to record your voice. Turn it off here when done.')};
   $('#ss').onclick=()=>{m.innerHTML='';nav(studio)};
+  $('#hm').onclick=()=>{store.set('noHuman',!store.get('noHuman',false));m.innerHTML='';parentPanel()};
   $('#rs').onclick=()=>{S.stars=0;store.set('stars',0);m.innerHTML='';rerun()};
   $('#cl').onclick=()=>{S.recs={};store.set('recs',{});m.innerHTML=''};
   $('#cx').onclick=()=>m.innerHTML='';
