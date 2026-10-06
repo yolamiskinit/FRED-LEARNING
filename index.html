@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#43a82b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Fred's Learning Adventure</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:'Comic Sans MS','Chalkboard SE','Segoe Print',sans-serif;color:#2b2b4a;background:#e3f4ff}
+#app{height:100%;display:flex;flex-direction:column;transition:background .3s}
+.top{display:flex;align-items:center;gap:10px;padding:10px 14px;min-height:64px}
+.btn{border:0;border-radius:18px;font:inherit;font-weight:bold;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.2);transition:transform .08s;color:#fff}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.2)}
+.back{background:#fff;font-size:22px;padding:8px 18px;color:#555}
+.title{flex:1;text-align:center;font-size:clamp(18px,4vw,32px);font-weight:bold}
+.stars{background:#ffd23f;border-radius:20px;padding:6px 14px;font-size:22px;font-weight:bold;color:#7a3b00;box-shadow:0 4px 0 #c89400;white-space:nowrap}
+.lock{background:transparent;border:0;font-size:22px;opacity:.35;padding:6px}
+main{flex:1;overflow:auto;padding:8px 16px 28px;-webkit-overflow-scrolling:touch}
+
+.home{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.home h1{margin:6px 0 0;font-size:clamp(32px,7vw,60px);color:#ff5a2c;text-shadow:0 3px 0 #fff,0 6px 0 #c53a14;line-height:1.05}
+.fredbig{width:min(36vw,220px);animation:bob 2.2s ease-in-out infinite;cursor:pointer}
+@keyframes bob{50%{transform:translateY(-12px) rotate(2deg)}}
+.big{width:min(88vw,520px);font-size:clamp(24px,5vw,36px);padding:16px 10px}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;max-width:950px;margin:10px auto}
+.mbtn{padding:18px 8px;font-size:clamp(18px,3.4vw,28px);display:flex;flex-direction:column;align-items:center;gap:6px;border-radius:26px}
+.mbtn span{font-size:clamp(38px,7vw,60px)}
+.mbtn small{font-size:.6em;opacity:.9;font-weight:normal}
+.home .menu{width:100%}
+@media (max-width:520px){
+ .fredbig{width:110px}
+ .hm{grid-template-columns:1fr;gap:10px}
+ .hm .mbtn{flex-direction:row;padding:12px 18px;justify-content:flex-start;gap:16px;text-align:left}
+ .hm .mbtn span{font-size:46px}
+ .menu{gap:10px}
+ .mbtn{padding:12px 6px}
+ .grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+}
+.hm{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.hm .mbtn{padding:30px 8px;font-size:clamp(22px,4.6vw,38px)}
+.hm .mbtn span{font-size:clamp(60px,11vw,96px)}
+.hm .mbtn small{font-size:.55em}
+.hd{max-width:950px;margin:16px auto 4px;font-size:22px;font-weight:bold}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;max-width:1000px;margin:0 auto}
+.card{background:#fff;border-radius:26px;border:5px solid;text-align:center;padding:8px 4px 10px;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.15)}
+.card:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.card .pic{font-size:clamp(46px,9vw,72px);line-height:1.15}
+.card .g{font-size:clamp(38px,8vw,60px);font-weight:bold;line-height:1}
+.card .w{font-size:clamp(16px,3vw,22px);font-weight:bold;color:#2b2b4a}
+.card.rec{outline:5px dashed #e62e2e}
+.card.pop{animation:pop .35s}
+@keyframes pop{50%{transform:scale(1.12)}}
+.tip{text-align:center;font-size:18px;margin:4px 0 12px}
+.playrow{text-align:center;margin:16px 0 4px}
+.playrow .btn{background:#8453e0;font-size:24px;padding:14px 30px}
+
+.ft{max-width:760px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:16px}
+.ftpic{font-size:clamp(90px,20vw,150px);line-height:1}
+.letters{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.lt{background:#fff;border:5px solid #43a82b;border-radius:22px;min-width:80px;padding:6px 14px 14px;text-align:center;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.15)}
+.lt .l{font-size:clamp(44px,9vw,80px);font-weight:bold;line-height:1.1}
+.lt .d{display:block;margin:2px auto 0;background:#ff5a2c;border-radius:50%;width:18px;height:18px}
+.lt .d.dash{border-radius:10px;width:80%;height:10px;background:#f0509a}
+.lt.on{background:#fff3b0;transform:scale(1.12);border-color:#ff9a1f}
+.lt.blank{border-style:dashed;border-color:#a67cf0;color:#a67cf0}
+.lt.filled{border-color:#ff9a1f;background:#fff3b0}
+.word{font-size:clamp(50px,12vw,96px);font-weight:bold;color:#2f7d1c;min-height:1.2em}
+.word.show{animation:pop .5s}
+.row2{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.go{font-size:24px;padding:14px 24px}
+
+.game{max-width:820px;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.prompt{font-size:clamp(20px,4.2vw,32px);font-weight:bold;cursor:pointer}
+.q{font-size:clamp(70px,16vw,130px);line-height:1}
+.qword{font-size:clamp(54px,13vw,100px);font-weight:bold}
+.opts{display:grid;gap:14px;width:100%}
+.opt{background:#fff;border:5px solid #a67cf0;border-radius:24px;padding:10px 4px;font-size:clamp(40px,9vw,76px);font-weight:bold;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.15);line-height:1.1;display:flex;align-items:center;justify-content:center;min-height:90px}
+.opt.sm{font-size:clamp(24px,5vw,42px)}
+.opt.em{font-size:clamp(46px,10vw,80px)}
+.opt.bad{animation:shake .4s;background:#ffd6d6;border-color:#e62e2e}
+.opt.good{background:#c8f5a8;border-color:#43a82b}
+@keyframes shake{25%{transform:translateX(-12px)}75%{transform:translateX(12px)}}
+.prog{height:16px;width:100%;background:#fff;border-radius:10px;overflow:hidden;border:3px solid #fff}
+.prog i{display:block;height:100%;background:#43a82b;transition:width .3s}
+.cheer{font-size:clamp(34px,8vw,60px);font-weight:bold;color:#ff5a2c}
+.conf{position:fixed;top:-40px;font-size:34px;pointer-events:none;animation:fall 1.8s ease-in forwards;z-index:50}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:.9}}
+
+/* memory */
+.mem{display:grid;gap:12px;width:100%;max-width:700px}
+.mc{aspect-ratio:1;border-radius:20px;border:5px solid #8453e0;background:#a67cf0;font-size:clamp(34px,8vw,60px);font-weight:bold;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.2);color:#fff}
+.mc.up{background:#fff;color:#2b2b4a;border-color:#ffa534}
+.mc.ok{background:#c8f5a8;border-color:#43a82b;color:#2b2b4a}
+.mc.sm{font-size:clamp(20px,4.5vw,34px)}
+
+/* story */
+.sbook{max-width:820px;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+.spic{font-size:clamp(110px,26vw,200px);line-height:1;background:#fff;border-radius:36px;padding:10px 30px;border:6px solid #ffc933;box-shadow:0 8px 0 rgba(0,0,0,.15)}
+.stxt{font-size:clamp(30px,6.5vw,56px);font-weight:bold;line-height:1.35;background:#fff;border-radius:26px;padding:12px 20px;width:100%}
+.sw{display:inline-block;padding:0 4px;border-radius:10px;cursor:pointer}
+.sw:active,.sw.on{background:#ffe27a}
+.dots{display:flex;gap:8px}.dots i{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #ffa534}.dots i.on{background:#ffa534}
+.cover{font-size:clamp(70px,14vw,110px)}
+
+/* maths visuals */
+.grp{display:inline-flex;flex-direction:column;gap:4px;align-items:center;vertical-align:middle}
+.grp div{display:flex;gap:4px}
+.grp span{font-size:clamp(28px,6vw,46px);line-height:1.1;position:relative}
+.grp span.x{opacity:.35;filter:grayscale(1)}
+.grp span.x::after{content:'✖';position:absolute;left:0;right:0;top:0;color:#e62e2e;font-size:1em;opacity:1}
+.mv{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;min-height:90px}
+.mv .op{font-size:clamp(34px,7vw,56px);font-weight:bold;color:#ff5a2c}
+.seq{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.seq b{background:#fff;border:4px solid #3aa0e0;border-radius:18px;min-width:70px;padding:6px 10px;font-size:clamp(34px,8vw,60px)}
+.seq b.q2{background:#fff3b0;border-color:#ff9a1f}
+.bar{height:34px;border-radius:18px}
+.opt .grp span{font-size:clamp(22px,4.5vw,34px)}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.panel{background:#fff;border-radius:24px;padding:20px;max-width:520px;width:100%;font-size:18px}
+.panel h2{margin:0 0 8px}
+.panel button{display:block;width:100%;margin:10px 0;padding:14px;font-size:18px;background:#3aa0e0}
+.panel .on{background:#e62e2e}
+.c0{border-color:#ff6b6b;color:#d63a3a}.c1{border-color:#ffa534;color:#c76a00}.c2{border-color:#2fb86a;color:#1b8a4b}.c3{border-color:#3aa0e0;color:#2377b0}.c4{border-color:#a67cf0;color:#6d3fc7}.c5{border-color:#f0509a;color:#c02371}
+.red{background:#ff6b6b;border:0;box-shadow:0 6px 0 #b83030}
+.red .g{font-size:clamp(34px,7vw,56px);color:#fff}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="fred" viewBox="0 0 200 180">
+<ellipse cx="100" cy="125" rx="70" ry="48" fill="#5ed13f" stroke="#2a8a14" stroke-width="5"/><ellipse cx="100" cy="140" rx="45" ry="30" fill="#c8f5a8"/>
+<circle cx="62" cy="62" r="30" fill="#5ed13f" stroke="#2a8a14" stroke-width="5"/><circle cx="138" cy="62" r="30" fill="#5ed13f" stroke="#2a8a14" stroke-width="5"/>
+<circle cx="62" cy="60" r="21" fill="#fff" stroke="#2a8a14" stroke-width="3"/><circle cx="138" cy="60" r="21" fill="#fff" stroke="#2a8a14" stroke-width="3"/>
+<circle cx="66" cy="62" r="10" fill="#222"/><circle cx="134" cy="62" r="10" fill="#222"/><circle cx="69" cy="58" r="3.5" fill="#fff"/><circle cx="137" cy="58" r="3.5" fill="#fff"/>
+<path d="M55 112 Q100 160 145 112" fill="#d63a3a" stroke="#2a8a14" stroke-width="4"/><path d="M70 123 Q100 145 130 123 Q100 132 70 123Z" fill="#ff9aa8"/>
+<circle cx="45" cy="100" r="9" fill="#ff9aa8" opacity=".8"/><circle cx="155" cy="100" r="9" fill="#ff9aa8" opacity=".8"/>
+<ellipse cx="38" cy="165" rx="26" ry="11" fill="#5ed13f" stroke="#2a8a14" stroke-width="4"/><ellipse cx="162" cy="165" rx="26" ry="11" fill="#5ed13f" stroke="#2a8a14" stroke-width="4"/>
+</symbol></defs></svg>
+<div id="app"></div>
+<div id="modal"></div>
+
+<script>
+/* =================== DATA: KEY SETS 1-10 =================== */
+const cols=['c0','c1','c2','c3','c4','c5'];
+const L=(g,pic,w,snd)=>({g,pic,w,snd});
+const F=(pic,parts,w)=>({pic,parts,w});
+const disp=p=>p.replace(/\d$/,'');
+const SETS={
+1:{name:'First Sounds',
+ sounds:[L('a','🍎','apple'),L('b','🏀','ball'),L('c','🐱','cat'),L('d','🐶','dog'),L('e','🥚','egg'),L('f','🐟','fish'),L('g','🐐','goat'),L('h','🐴','horse'),L('i','🐛','insect'),L('j','🧃','juice'),L('k','🪁','kite'),L('l','🦁','lion'),L('m','🌙','moon'),L('n','🪺','nest'),L('o','🐙','octopus'),L('p','🐷','pig'),L('q','👑','queen'),L('r','🚀','rocket'),L('s','☀️','sun'),L('t','🐯','tiger'),L('u','☂️','umbrella'),L('v','🚐','van'),L('w','🪱','worm'),L('x','🦊','fox'),L('y','🪀','yo-yo'),L('z','🦓','zebra')],
+ special:[L('sh','🚢','ship'),L('ch','🍟','chips'),L('th','👍','thumb'),L('ng','💍','ring'),L('qu','👑','queen'),L('nk','🏦','bank')],
+ chatty:[L('ai','🌧️','rain'),L('ee','🐝','bee'),L('igh','🌙','night'),L('oa','⛵','boat'),L('oo','🥄','spoon'),L('ar','🚗','car')],
+ fred:[F('🐱',['c','a','t'],'cat'),F('🐶',['d','o','g'],'dog'),F('☀️',['s','u','n'],'sun'),F('🐷',['p','i','g'],'pig'),F('🐔',['h','e','n'],'hen'),F('🚌',['b','u','s'],'bus'),F('🐞',['b','u','g'],'bug'),F('🚢',['sh','i','p'],'ship'),F('🍟',['ch','i','p'],'chip'),F('🐟',['f','i','sh'],'fish'),F('🌧️',['r','ai','n'],'rain'),F('🌳',['t','r','ee'],'tree'),F('🐐',['g','oa','t'],'goat')],
+ tricky:['the','I','no','go','to','into','my','he','she']},
+2:{name:'More Chatty Friends',
+ special:[L('ck','🦆','duck'),L('ff','💨','puff'),L('ll','🔔','bell'),L('ss','🐍','hiss'),L('zz','🐝','buzz'),L('ck','🧦','sock')],
+ chatty:[L('ay','☀️','play'),L('ee','🐝','bee'),L('igh','🌙','night'),L('ow','❄️','snow'),L('oo','🦁','zoo'),L('oo','📖','book','oo2'),L('ar','🚗','car'),L('or','🍴','fork'),L('air','💇','hair'),L('ir','🐦','bird'),L('ou','☁️','cloud'),L('oy','👦','boy')],
+ fred:[F('🐸',['f','r','o','g'],'frog'),F('🛑',['s','t','o','p'],'stop'),F('👏',['c','l','a','p'],'clap'),F('🥁',['d','r','u','m'],'drum'),F('🦘',['j','u','m','p'],'jump'),F('⛺',['t','e','n','t'],'tent'),F('🍑',['p','l','u','m'],'plum'),F('🦆',['d','u','ck'],'duck'),F('🔔',['b','e','ll'],'bell'),F('🧦',['s','o','ck'],'sock'),F('🦈',['sh','ar','k'],'shark'),F('🌟',['s','t','ar'],'star'),F('🏠',['h','ou','se'],'house'),F('🧸',['t','oy'],'toy')],
+ tricky:['was','you','they','are','said','all','have','like','come']},
+3:{name:'Super Sounds',
+ special:[L('tch','🧙','witch'),L('dge','🌉','bridge')],
+ chatty:[L('ea','🦭','seal'),L('oi','🪙','coin'),L('aw','🐾','paw'),L('ew','🍲','stew'),L('ur','👛','purse'),L('er','✉️','letter')],
+ fred:[F('🦭',['s','ea','l'],'seal'),F('🍑',['p','ea','ch'],'peach'),F('🍃',['l','ea','f'],'leaf'),F('🪙',['c','oi','n'],'coin'),F('🐾',['p','aw'],'paw'),F('🍲',['s','t','ew'],'stew'),F('👛',['p','ur','se'],'purse'),F('⛪',['ch','ur','ch'],'church'),F('✉️',['l','e','tt','er'],'letter'),F('🧙',['w','i','tch'],'witch'),F('🌉',['b','r','i','dge'],'bridge')],
+ tricky:['some','were','there','little','one','do']},
+4:{name:'Magic e',
+ chatty:[L('a_e','🎂','cake'),L('i_e','🚲','bike'),L('o_e','🏠','home'),L('u_e','🧊','cube')],
+ fred:[F('🎂',['c','a_e','k'],'cake'),F('🚪',['g','a_e','t'],'gate'),F('🐍',['s','n','a_e','k'],'snake'),F('🪁',['k','i_e','t'],'kite'),F('🚲',['b','i_e','k'],'bike'),F('🏠',['h','o_e','m'],'home'),F('🦴',['b','o_e','n'],'bone'),F('🪢',['r','o_e','p'],'rope'),F('🧊',['c','u_e','b'],'cube'),F('🌍',['g','l','o_e','b'],'globe'),F('✈️',['p','l','a_e','n'],'plane'),F('🛝',['s','l','i_e','d'],'slide')],
+ tricky:['when','out','what','here','put','now']},
+5:{name:'Sky and Blue',
+ chatty:[L('ie','🥧','pie'),L('y','🪰','fly','y3'),L('ue','💙','blue'),L('ow','🐮','cow','ow2'),L('ear','👂','ear'),L('ire','🔥','fire')],
+ fred:[F('🥧',['p','ie'],'pie'),F('🪰',['f','l','y3'],'fly'),F('🌤️',['s','k','y3'],'sky'),F('💙',['b','l','ue'],'blue'),F('🧴',['g','l','ue'],'glue'),F('🐮',['c','ow2'],'cow'),F('🦉',['ow2','l'],'owl'),F('🏘️',['t','ow2','n'],'town'),F('👂',['ear'],'ear'),F('🔥',['f','ire'],'fire')],
+ tricky:['very','would','could','should','over','again']},
+6:{name:'Tricky Letters',
+ special:[L('wh','🐳','whale'),L('ph','🐬','dolphin'),L('kn','🦵','knee'),L('wr','🎁','wrap'),L('mb','🐑','lamb'),L('ce','🐭','mice'),L('ge','📄','page')],
+ chatty:[L('ey','🫏','donkey')],
+ fred:[F('🐳',['wh','a_e','l'],'whale'),F('🦵',['kn','ee'],'knee'),F('🎁',['wr','a','p'],'wrap'),F('🐑',['l','a','mb'],'lamb'),F('🐭',['m','i_e','ce'],'mice'),F('📄',['p','a_e','ge'],'page'),F('🐬',['d','o','l','ph','i','n'],'dolphin'),F('🫏',['d','o','n','k','ey'],'donkey'),F('🧊',['i_e','ce'],'ice')],
+ tricky:['any','many','because','friend','school','your']},
+7:{name:'Different Spellings',
+ chatty:[L('ea','🍞','bread','ea2'),L('y','😊','happy','y2'),L('ou','🍲','soup','ou2'),L('oo','📖','book','oo2'),L('ow','🐮','cow','ow2'),L('ow','❄️','snow')],
+ fred:[F('🍞',['b','r','ea2','d'],'bread'),F('😊',['h','a','pp','y2'],'happy'),F('👶',['b','ay','b','y2'],'baby'),F('🍲',['s','ou2','p'],'soup'),F('📖',['b','oo2','k'],'book'),F('🦶',['f','oo2','t'],'foot'),F('🪵',['w','oo2','d'],'wood'),F('🪝',['h','oo2','k'],'hook'),F('🐮',['c','ow2'],'cow'),F('❄️',['s','n','ow'],'snow')],
+ tricky:['where','who','first','after','water','old']},
+8:{name:'Word Endings',
+ special:[L('ing','🎤','singing'),L('er','🧑‍🏫','teacher')],
+ fred:[F('🦘',['j','u','m','p','ing'],'jumping'),F('🎤',['s','ing','ing'],'singing'),F('🎮',['p','l','ay','ing'],'playing'),F('🍽️',['ea','t','ing'],'eating'),F('🏃',['r','u','nn','ing'],'running'),F('😴',['s','l','ee','p','ing'],'sleeping'),F('📖',['r','ea','d','ing'],'reading'),F('🧑‍🏫',['t','ea','ch','er'],'teacher'),F('👨‍🌾',['f','ar','m','er'],'farmer'),F('🧥',['j','u','m','p','er'],'jumper')],
+ tricky:['people','their','called','asked','every','great']},
+9:{name:'Big Words',
+ special:[L('tion','🚉','station'),L('ture','🖼️','picture')],
+ fred:[F('🌈',['r','ai','n','b','ow'],'rainbow'),F('🌇',['s','u','n','s','e','t'],'sunset'),F('🧁',['c','u','p','c','a_e','k'],'cupcake'),F('🌙',['m','oo','n','l','igh','t'],'moonlight'),F('🤠',['c','ow2','b','oy'],'cowboy'),F('🧥',['r','ai','n','c','oa','t'],'raincoat'),F('👜',['h','a','n','d','b','a','g'],'handbag'),F('🐚',['s','ea','sh','e','ll'],'seashell'),F('🐠',['s','t','ar','f','i','sh'],'starfish')],
+ tricky:['gone','whole','only','move','door','floor']},
+10:{name:'Reading Champion',
+ special:[L('sh','🚢','ship'),L('ch','🍟','chips'),L('th','👍','thumb'),L('ng','💍','ring'),L('ck','🦆','duck'),L('tch','🧙','witch'),L('ph','🐬','dolphin'),L('kn','🦵','knee')],
+ chatty:[L('ai','🌧️','rain'),L('ee','🐝','bee'),L('igh','🌙','night'),L('oa','⛵','boat'),L('oo','🥄','spoon'),L('ar','🚗','car'),L('or','🍴','fork'),L('ea','🦭','seal'),L('a_e','🎂','cake'),L('i_e','🚲','bike'),L('o_e','🏠','home'),L('u_e','🧊','cube')],
+ fred:[F('🐘',['e','l','e','ph','a','n','t'],'elephant'),F('☔',['u','m','b','r','e','ll','a'],'umbrella'),F('🦋',['b','u','tt','er','f','l','y3'],'butterfly'),F('👾',['m','o','n','s','t','er'],'monster'),F('🎺',['t','r','u','m','p','e','t'],'trumpet'),F('🧺',['b','a','s','k','e','t'],'basket'),F('🐇',['r','a','bb','i','t'],'rabbit'),F('🥪',['s','a','n','d','w','i','ch'],'sandwich'),F('🐉',['d','r','a','g','o','n'],'dragon')],
+ tricky:['ask','find','kind','mind','told','cold']}
+};
+const SETCOL=['#43a82b','#8453e0','#3aa0e0','#ff9a1f','#f0509a','#2fb86a','#e6397c','#ff6b6b','#a67cf0','#ffa534'];
+
+/* =================== STORIES =================== */
+const P=(pic,text)=>({pic,text});
+const STORIES=[
+ {set:1,title:'Fred Sits in the Sun',pic:'🐸',pages:[P('🐸','Fred is a frog.'),P('☀️','Fred sits in the sun.'),P('🐞','A bug is on a log.'),P('🐸','Fred can hop. Hop, hop, hop!'),P('🐟','Fred sees a fish in the pond.'),P('🌙','Fred is in bed. Night, night!')]},
+ {set:2,title:'Rain, Rain, Rain!',pic:'🌧️',pages:[P('🌧️','Rain, rain, rain!'),P('☂️','Fred has an umbrella.'),P('🐸','Fred jumps in the mud. Splash!'),P('🦆','A duck says, quack, quack!'),P('🌈','Look, a rainbow!'),P('🏠','Fred goes home. He is so happy.')]},
+ {set:3,title:'The Seal and the Coin',pic:'🦭',pages:[P('🦭','A seal sits by the sea.'),P('🪙','The seal sees a coin.'),P('👛','The seal puts the coin in a purse.'),P('🍲','The seal does not like stew.'),P('🐟','The seal buys a fish with the coin.'),P('😋','Yum, yum! The seal is full.')]},
+ {set:4,title:'Jake Bakes a Cake',pic:'🎂',pages:[P('🧑‍🍳','Jake can bake a cake.'),P('🥚','He gets an egg.'),P('🥣','He mixes the cake. Mix, mix, mix!'),P('🔥','The cake is in the oven. It is hot!'),P('🎂','Look at the cake! It is big.'),P('🎉','Jake and his mum eat the cake.')]},
+ {set:5,title:'Fly, Fly, Fly!',pic:'🪰',pages:[P('🥧','A fly sits on a pie.'),P('🐮','A cow sees the fly.'),P('👂','The cow can hear the fly. Buzz!'),P('💙','The fly is blue.'),P('🌤️','The fly goes up in the sky.'),P('🌟','Bye bye, fly!')]},
+ {set:6,title:'The Kind Whale',pic:'🐳',pages:[P('🐳','A whale lives in the sea.'),P('🐬','A dolphin is her friend.'),P('🦵','The dolphin has a sore knee.'),P('🎁','The whale can wrap it up.'),P('🐑','A lamb is on the shore.'),P('😊','The whale is kind to all.')]},
+ {set:7,title:'Happy Baby Cow',pic:'🐮',pages:[P('🐮','A baby cow is on the farm.'),P('🌾','The baby cow looks for food.'),P('🍞','She sees some bread.'),P('🍲','She tastes the soup.'),P('🦶','She stamps her foot.'),P('😊','The baby cow is happy.')]},
+ {set:8,title:'Jumping and Singing',pic:'🎤',pages:[P('🦘','Jumping, jumping, jumping!'),P('🎤','Singing, singing, singing!'),P('🏃','Running, running, running!'),P('🧑‍🏫','The teacher is reading.'),P('👨‍🌾','The farmer is eating.'),P('😴','Now everyone is sleeping.')]},
+ {set:9,title:'Rainbow Moonlight',pic:'🌈',pages:[P('🌈','A rainbow is in the sky.'),P('🌙','Then comes the moonlight.'),P('🧁','Jess has a cupcake.'),P('👜','She puts it in her handbag.'),P('🐚','At the beach she finds a seashell.'),P('🐠','A starfish says hello!')]},
+ {set:10,title:'The Big Monster Sandwich',pic:'🥪',pages:[P('👾','A monster is hungry.'),P('🥪','He makes a big sandwich.'),P('🐇','A rabbit wants some.'),P('🐘','An elephant wants some.'),P('🦋','Even a butterfly wants some.'),P('👾','The monster shares it. They are all happy!')]}
+];
+
+/* =================== STORAGE / STATE =================== */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let S={set:1,stars:store.get('stars',0),recMode:false,recs:store.get('recs',{}),best:store.get('best',{}),read:store.get('read',{})};
+const $=s=>document.querySelector(s);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstChild};
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const sk=it=>it.snd||it.g;
+
+/* =================== AUDIO =================== */
+let voice=null;
+function pickVoice(){const vs=speechSynthesis.getVoices();voice=vs.find(v=>/en-GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function tts(text,rate=.75){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(voice)u.voice=voice;u.lang='en-GB';u.rate=rate;u.pitch=1.15;speechSynthesis.speak(u)}catch(e){}}
+let curAudio=null;
+function say(text,key,rate){
+  if(key&&S.recs[key]){try{curAudio&&curAudio.pause();curAudio=new Audio(S.recs[key]);curAudio.play();return}catch(e){}}
+  tts(text,rate);
+}
+const sayWord=w=>say(w,'w:'+w,.75);
+function beep(ok){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const c=AC;const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='triangle';const t=c.currentTime;if(ok){o.frequency.setValueAtTime(660,t);o.frequency.setValueAtTime(880,t+.12);o.frequency.setValueAtTime(1100,t+.24)}else{o.frequency.setValueAtTime(220,t);o.frequency.setValueAtTime(180,t+.15)}g.gain.setValueAtTime(.2,t);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.start();o.stop(t+.45)}catch(e){}}
+
+/* ---- pure phoneme synthesiser ---- */
+const v=(s,d,a,b,g,G)=>({k:'v',s,d,a,b:b||a,g:g==null?1:g,G:G||[1,.6,.35]});
+const nz=(s,d,type,f,q,g,o)=>Object.assign({k:'n',s,d,type,f,q,g},o||{});
+const dip=(a,b,d1,d2)=>[v(0,d1,a),v(d1,d2,a,b)];
+const K=[nz(0,.06,'bandpass',2200,1,1.2,{burst:1}),nz(.01,.07,'bandpass',2000,1,.3)];
+const S_=[nz(0,.75,'highpass',5800,.7,1)],Z_=[nz(0,.75,'highpass',5000,.7,.8,{buzz:.6})],F_=[nz(0,.75,'bandpass',5000,.3,.6)],L_=[v(0,.7,[360,1000,2700],null,.9,[1,.5,.3])];
+const NG=d=>[v(0,d,[250,1200,2300],null,.8,[1,.2,.08])];
+const SCHWA=(s,d)=>v(s,d,[500,1450,1700],null,.8);
+const PH={
+ a:[v(0,.5,[720,1700,2500])],e:[v(0,.5,[560,1850,2500])],i:[v(0,.5,[420,1900,2500])],o:[v(0,.5,[640,950,2500])],u:[v(0,.5,[650,1200,2500])],
+ ay:dip([560,1850,2500],[320,2200,2900],.3,.4),ee:[v(0,.7,[300,2300,3000])],igh:dip([750,1250,2500],[350,2100,2900],.3,.4),
+ oa:dip([520,950,2400],[360,800,2300],.3,.4),oo:[v(0,.7,[330,900,2300])],oo2:[v(0,.5,[450,1050,2300])],
+ ar:[v(0,.7,[750,1100,2500])],or:[v(0,.7,[550,880,2400])],air:dip([560,1800,2500],[620,1350,2500],.35,.35),ir:[v(0,.7,[500,1400,1700])],
+ ou:dip([750,1200,2500],[400,850,2300],.3,.4),oy:dip([560,900,2400],[350,2100,2900],.3,.4),
+ m:[v(0,.7,[250,1000,2200],null,.8,[1,.15,.05])],n:[v(0,.7,[250,1600,2500],null,.8,[1,.2,.1])],ng:NG(.7),
+ l:L_,r:[v(0,.6,[400,1100,1500])],w:[v(0,.5,[300,700,2300],[500,1100,2400])],y:[v(0,.5,[280,2250,3000],[400,1900,2600])],
+ s:S_,z:Z_,f:F_,v:[nz(0,.75,'bandpass',5000,.3,.5,{buzz:.5})],
+ sh:[nz(0,.75,'bandpass',3000,1.2,1)],th:[nz(0,.75,'bandpass',6500,.3,.35)],h:[nz(0,.5,'bandpass',1800,.4,.6)],
+ p:[nz(0,.05,'bandpass',900,.7,1.2,{burst:1}),nz(.01,.06,'bandpass',1500,.8,.3)],
+ t:[nz(0,.05,'highpass',3500,.8,1.2,{burst:1}),nz(.01,.06,'highpass',5000,.8,.25)],
+ k:K,
+ b:[v(0,.08,[250,1000,2200],null,.5,[1,.1,.05]),nz(.07,.03,'bandpass',800,.8,1,{burst:1}),v(.08,.05,[500,1200,2300],null,.3)],
+ d:[v(0,.08,[250,1500,2300],null,.5,[1,.1,.05]),nz(.07,.03,'highpass',3000,.8,1,{burst:1}),v(.08,.05,[500,1600,2500],null,.3)],
+ g:[v(0,.08,[250,1200,2200],null,.5,[1,.1,.05]),nz(.07,.04,'bandpass',2000,1,1,{burst:1}),v(.08,.05,[500,1300,2300],null,.3)],
+ ch:[nz(0,.04,'highpass',3500,.8,1.2,{burst:1}),nz(.03,.35,'bandpass',3000,1.2,.8)],
+ j:[v(0,.06,[250,1500,2300],null,.5,[1,.1,.05]),nz(.05,.4,'bandpass',3000,1.2,.7,{buzz:.5})],
+ x:[...K,nz(.09,.5,'highpass',5800,.7,.8)],
+ qu:[...K,v(.07,.45,[300,700,2300],[500,1100,2400])],
+ nk:[...NG(.45),nz(.45,.06,'bandpass',2200,1,1.2,{burst:1}),nz(.46,.07,'bandpass',2000,1,.3)],
+ er:[SCHWA(0,.45)],
+ ew:[v(0,.15,[280,2250,3000],[330,900,2300]),v(.15,.55,[330,900,2300])],
+ ear:dip([300,2300,3000],[500,1400,2500],.35,.35),
+ ire:[...dip([750,1250,2500],[350,2100,2900],.3,.3),SCHWA(.6,.3)],
+ ing:[v(0,.3,[420,1900,2500]),v(.3,.5,[250,1200,2300],null,.8,[1,.2,.08])],
+ tion:[nz(0,.35,'bandpass',3000,1.2,1),SCHWA(.3,.25),v(.5,.35,[250,1600,2500],null,.8,[1,.2,.1])],
+ ture:[nz(0,.04,'highpass',3500,.8,1.2,{burst:1}),nz(.03,.3,'bandpass',3000,1.2,.8),SCHWA(.3,.3)]
+};
+Object.assign(PH,{c:K,ck:K,ai:PH.ay,ea:PH.ee,ey:PH.ee,y2:PH.ee,oi:PH.oy,aw:PH.or,ur:PH.ir,a_e:PH.ay,i_e:PH.igh,o_e:PH.oa,u_e:[v(0,.15,[280,2250,3000],[330,900,2300]),...PH.oo.map(x=>Object.assign({},x,{s:.15,d:.55}))],ie:PH.igh,y3:PH.igh,
+ ue:PH.oo,ow:PH.oa,ow2:PH.ou,ou2:PH.oo,ea2:PH.e,are:PH.air,wh:PH.w,ph:PH.f,kn:PH.n,wr:PH.r,mb:PH.m,ce:S_,ge:PH.j,tch:PH.ch,dge:PH.j,
+ tt:PH.t,pp:PH.p,nn:PH.n,bb:PH.b,ff:F_,ll:L_,ss:S_,zz:Z_,se:S_,q:PH.qu});
+const SR=22050,PITCH=210;
+function build(ctx,spec){
+  const noise=ctx.createBuffer(1,SR,SR),nd=noise.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+  const master=ctx.createGain();master.connect(ctx.destination);
+  const env=(g,t,d,burst,peak)=>{g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(peak,t+(burst?.004:.04));if(burst)g.gain.exponentialRampToValueAtTime(.001,t+d);else{g.gain.setValueAtTime(peak,t+Math.max(.05,d-.08));g.gain.linearRampToValueAtTime(0,t+d)}};
+  const buzz=(t,d,lvl,out)=>{const o=ctx.createOscillator();o.type='sawtooth';o.frequency.value=PITCH;const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=450;const g=ctx.createGain();g.gain.value=lvl*.5;o.connect(lp).connect(g).connect(out);o.start(t);o.stop(t+d+.05)};
+  spec.forEach(sg=>{
+    const t=sg.s+.02,d=sg.d;const e=ctx.createGain();e.connect(master);
+    if(sg.k==='v'){
+      const o=ctx.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(PITCH*1.04,t);o.frequency.linearRampToValueAtTime(PITCH*.9,t+d);
+      [6,9,12].forEach((q,i)=>{const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.Q.value=q;bp.frequency.setValueAtTime(sg.a[i],t);bp.frequency.linearRampToValueAtTime(sg.b[i],t+d);const g=ctx.createGain();g.gain.value=sg.G[i];o.connect(bp).connect(g).connect(e)});
+      o.start(t);o.stop(t+d+.05);env(e,t,d,false,sg.g*.5);
+    }else{
+      const src=ctx.createBufferSource();src.buffer=noise;src.loop=true;const f=ctx.createBiquadFilter();f.type=sg.type;f.frequency.value=sg.f;f.Q.value=sg.q;
+      src.connect(f).connect(e);src.start(t);src.stop(t+d+.05);env(e,t,d,!!sg.burst,sg.g);
+      if(sg.buzz){const be=ctx.createGain();be.connect(master);buzz(t,d,sg.buzz,be);env(be,t,d,false,.6)}
+    }
+  });
+}
+const BUF={};let AC=null;
+async function renderPhon(key){
+  const spec=PH[key];if(!spec)return;
+  const dur=Math.max(...spec.map(s=>s.s+s.d))+.15;
+  const oc=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,Math.ceil(SR*dur),SR);
+  build(oc,spec);
+  const b=await oc.startRendering();const d=b.getChannelData(0);let sum=0,pk=0;
+  for(let i=0;i<d.length;i++){sum+=d[i]*d[i];pk=Math.max(pk,Math.abs(d[i]))}
+  const rms=Math.sqrt(sum/d.length)||1;const sc=Math.min(.14/rms,.9/(pk||1));for(let i=0;i<d.length;i++)d[i]*=sc;
+  BUF[key]=b;
+}
+try{(async()=>{for(const k of Object.keys(PH))await renderPhon(k)})()}catch(e){}
+function synth(key){
+  const b=BUF[key];if(!b)return false;
+  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();speechSynthesis.cancel();
+   const s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);s.start();return true}catch(e){return false}
+}
+function saySound(g){
+  if(S.recs['s:'+g]){say('','s:'+g);return}
+  if(!synth(g))say(disp(g),null,.6);
+}
+
+function record(key,cardEl){
+  navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{
+    const mr=new MediaRecorder(st),chunks=[];
+    mr.ondataavailable=e=>chunks.push(e.data);
+    mr.onstop=()=>{st.getTracks().forEach(t=>t.stop());const r=new FileReader();r.onload=()=>{S.recs[key]=r.result;store.set('recs',S.recs);cardEl.classList.remove('rec');beep(true)};r.readAsDataURL(new Blob(chunks,{type:mr.mimeType}))};
+    cardEl.classList.add('rec');mr.start();setTimeout(()=>mr.state!=='inactive'&&mr.stop(),1400);
+  }).catch(()=>alert('Microphone not available. Please allow microphone access.'));
+}
+
+/* =================== HELPERS / NAV =================== */
+function confetti(n=24){const em=['⭐','🎉','✨','🌟','🎈','💖'];for(let i=0;i<n;i++){const d=document.createElement('div');d.className='conf';d.textContent=em[i%em.length];d.style.left=Math.random()*100+'vw';d.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}}
+function addStar(n=1){S.stars+=n;store.set('stars',S.stars);const e=$('.stars');if(e)e.textContent='⭐ '+S.stars}
+const H=[];
+function nav(f){H.push(f);f()}
+function back(){if(H.length>1){H.pop();H[H.length-1]()}}
+function rerun(){H[H.length-1]()}
+function frame(title,body,o={}){
+  const a=$('#app');a.innerHTML='';a.style.background=o.bg||'#e3f4ff';
+  a.appendChild(el(`<div class="top">${o.home?'':'<button class="btn back" id="bk" style="color:#555">⬅ Back</button>'}<div class="title">${title}</div><div class="stars">⭐ ${S.stars}</div><button class="lock" id="lk">🔒</button></div>`));
+  const m=document.createElement('main');m.appendChild(body);a.appendChild(m);
+  if(!o.home)$('#bk').onclick=back;
+  let t;const lk=$('#lk');const st=()=>{t=setTimeout(parentPanel,1500)},en=()=>clearTimeout(t);
+  lk.ontouchstart=lk.onmousedown=st;lk.ontouchend=lk.onmouseup=lk.onmouseleave=en;
+}
+function menuGrid(items){ // items: [emoji,label,fn,colour,small]
+  const d=el('<div class="menu"></div>');
+  items.forEach((it,i)=>{const b=el(`<button class="btn mbtn" style="background:${it[3]||SETCOL[i%10]}"><span>${it[0]}</span>${it[1]}${it[4]?`<small>${it[4]}</small>`:''}</button>`);b.onclick=it[2];d.appendChild(b)});
+  return d;
+}
+
+/* =================== SCREENS =================== */
+function homeScreen(){
+  const d=el(`<div class="home"><h1>Fred's Learning<br>Adventure</h1><svg class="fredbig" id="fb" viewBox="0 0 200 180"><use href="#fred"/></svg></div>`);
+  d.appendChild(menuGrid([['📚','Phonics','Learn to read',()=>nav(setPicker),'#43a82b'],['📖','Story Library','Read on your own',()=>nav(library),'#ff9a1f'],['🔢','Maths','Fun number books',()=>nav(mathsMenu),'#3aa0e0']].map(x=>[x[0],x[1],x[3],x[4],x[2]])));
+  d.querySelector('.menu').classList.add('hm');
+  frame('',d,{home:1,bg:'linear-gradient(#bfe9ff,#e8f8d8)'});
+  $('#fb').onclick=()=>{tts("Hello! I'm Fred! Let's learn!",.8);confetti(10)};
+}
+function setPicker(){
+  const items=Object.keys(SETS).map((k,i)=>['⭐'.repeat(Math.min(3,Math.ceil((+k)/4))),'Key Set '+k,()=>{S.set=+k;nav(setMenu)},SETCOL[i],SETS[k].name]);
+  frame('Phonics 📚',menuGrid(items),{bg:'#e3f4ff'});
+}
+function setMenu(){
+  const D=SETS[S.set];const it=[];
+  if(D.sounds)it.push(['🔤','Letter Sounds',()=>nav(()=>cards('sounds')),'#43a82b']);
+  if(D.special)it.push(['💕','Special Friends',()=>nav(()=>cards('special')),'#f0509a']);
+  if(D.chatty)it.push(['💬','Chatty Friends',()=>nav(()=>cards('chatty')),'#3aa0e0']);
+  it.push(['🐸','Fred Talk',()=>nav(fredtalk),'#2fb86a'],['🔴','Tricky Words',()=>nav(tricky),'#ff6b6b'],['📖','Story',()=>nav(()=>storyScreen(S.set-1)),'#ff9a1f'],['🎮','Games',()=>nav(()=>gameMenu('all')),'#8453e0']);
+  frame(`Key Set ${S.set}: ${D.name}`,menuGrid(it),{bg:'#e3f4ff'});
+}
+const TITLES={sounds:'Letter Sounds',special:'Special Friends',chatty:'Chatty Friends'};
+function cards(kind){
+  const list=SETS[S.set][kind];
+  const d=el('<div><div class="tip">Tap a card to hear it! 👆</div><div class="grid"></div><div class="playrow"><button class="btn" id="pg">🎮 Play games</button></div></div>');
+  list.forEach((it,i)=>{
+    const c=el(`<div class="card ${kind==='sounds'?cols[i%6]:kind==='special'?'c5':'c4'}"><div class="pic">${it.pic}</div><div class="g">${it.g}</div><div class="w">${it.w}</div></div>`);
+    c.onclick=()=>{
+      if(S.recMode){record('s:'+sk(it),c);return}
+      c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');
+      saySound(sk(it));setTimeout(()=>sayWord(it.w),1100);
+    };
+    d.querySelector('.grid').appendChild(c);
+  });
+  d.querySelector('#pg').onclick=()=>nav(()=>gameMenu(kind));
+  frame(TITLES[kind],d,{bg:kind==='special'?'#ffe8f3':kind==='chatty'?'#f0e8ff':'#e3f4ff'});
+}
+function fredtalk(){
+  const list=shuffle(SETS[S.set].fred);let i=0;
+  const d=el('<div class="ft"></div>');
+  function show(){
+    const w0=list[i];
+    d.innerHTML=`<div class="ftpic">${w0.pic}</div><div class="letters">${w0.parts.map((p,k)=>`<div class="lt" data-k="${k}"><div class="l">${disp(p)}</div><span class="d ${disp(p).length>1?'dash':''}"></span></div>`).join('')}</div>
+    <div class="word" id="wd">&nbsp;</div>
+    <div class="row2"><button class="btn go" style="background:#ff9a1f" id="fr">🐸 Fred Talk</button><button class="btn go" style="background:#43a82b" id="sq">👏 Squash!</button><button class="btn go" style="background:#3aa0e0" id="nx">Next ➡</button></div>
+    <button class="btn go" style="background:#8453e0" id="pg">🎮 Play games</button>`;
+    const ls=[...d.querySelectorAll('.lt')];
+    ls.forEach((l,k)=>l.onclick=()=>{ls.forEach(x=>x.classList.remove('on'));l.classList.add('on');saySound(w0.parts[k])});
+    $('#fr').onclick=()=>blendSay(w0.parts,k=>{ls.forEach(x=>x.classList.remove('on'));if(ls[k])ls[k].classList.add('on')},()=>ls.forEach(x=>x.classList.remove('on')));
+    $('#sq').onclick=()=>{const wd=$('#wd');wd.textContent=w0.w;wd.classList.remove('show');void wd.offsetWidth;wd.classList.add('show');sayWord(w0.w);addStar(1);confetti(10)};
+    $('#nx').onclick=()=>{i=(i+1)%list.length;show()};
+    $('#pg').onclick=()=>nav(()=>gameMenu('fred'));
+  }
+  frame('Fred Talk 🐸',d,{bg:'#e6f9dc'});show();
+}
+let blendTimers=[];
+function blendSay(parts,onStep,onEnd){blendTimers.forEach(clearTimeout);blendTimers=[];parts.forEach((p,k)=>blendTimers.push(setTimeout(()=>{onStep&&onStep(k);saySound(p)},k*950)));blendTimers.push(setTimeout(()=>onEnd&&onEnd(),parts.length*950))}
+function tricky(){
+  const d=el('<div><div class="tip">Tricky words: you can’t Fred Talk them! Tap to hear. 👆</div><div class="grid"></div><div class="playrow"><button class="btn" id="pg">🎮 Play games</button></div></div>');
+  SETS[S.set].tricky.forEach(w=>{const c=el(`<div class="card red"><div class="g" style="padding:22px 0">${w}</div></div>`);c.onclick=()=>{if(S.recMode){record('w:'+w,c);return}sayWord(w)};d.querySelector('.grid').appendChild(c)});
+  d.querySelector('#pg').onclick=()=>nav(()=>gameMenu('tricky'));
+  frame('Tricky Words 🔴',d,{bg:'#ffe8f3'});
+}
+
+/* =================== QUIZ ENGINE =================== */
+const ROUNDS=8;
+function quiz(title,gen,o={}){
+  const qs=gen();let n=0,score=0,locked=false;const d=el('<div class="game"></div>');
+  function ask(){
+    locked=false;
+    if(n>=qs.length){
+      if(o.key){S.best[o.key]=Math.max(S.best[o.key]||0,score);store.set('best',S.best)}
+      d.innerHTML=`<div class="cheer">🎉 ${score>=qs.length*.8?'Brilliant!':score>=qs.length*.5?'Well done!':'Good try!'} 🎉</div><div class="q">${score>=qs.length*.8?'🏆':'🌟'}</div><div class="prompt" style="cursor:default">You got ${score} out of ${qs.length}!</div><div class="row2"><button class="btn go" style="background:#43a82b" id="again">Play again</button><button class="btn go" style="background:#8453e0" id="bk2">⬅ Back</button></div>`;
+      confetti(40);beep(true);addStar(Math.max(1,Math.round(score/2)));$('#again').onclick=rerun;$('#bk2').onclick=back;return;
+    }
+    const q=qs[n];
+    const cc=q.cols||(q.opts.length===2?2:q.opts.length===4?2:3);
+    d.innerHTML=`<div class="prog"><i style="width:${n/qs.length*100}%"></i></div><div class="prompt" id="pr">${q.prompt}${q.play||q.say?' 🔊':''}</div>${q.visual?`<div id="vis">${q.visual}</div>`:''}<div class="opts" style="grid-template-columns:repeat(${cc},1fr)">${q.opts.map((x,i)=>`<div class="opt ${q.cls||''}" data-i="${i}">${x.h}</div>`).join('')}</div>`;
+    const play=()=>{q.play?q.play():q.say&&tts(q.say,.85)};
+    if(q.play||q.say){setTimeout(play,350);$('#pr').onclick=play;const v2=$('#vis');if(v2&&q.tapVisual)v2.onclick=play}
+    d.querySelectorAll('.opt').forEach(op=>op.onclick=()=>{
+      if(locked)return;const x=q.opts[+op.dataset.i];
+      if(x.v===q.ans){locked=true;op.classList.add('good');beep(true);confetti(8);score++;n++;q.after&&q.after();setTimeout(ask,q.after?1500:1000)}
+      else{op.classList.add('bad');beep(false);setTimeout(()=>op.classList.remove('bad'),500)}
+    });
+  }
+  frame(title,d,{bg:o.bg||'#f0e8ff'});ask();
+}
+/* option helpers */
+function strOpts(correct,pool,n=3,fmt=x=>x){
+  const others=shuffle([...new Set(pool.filter(x=>x!==correct))]).slice(0,n-1);
+  return shuffle([correct,...others]).map(x=>({h:fmt(x),v:x}));
+}
+const allItems=()=>Object.values(SETS).flatMap(s=>[...(s.sounds||[]),...(s.special||[]),...(s.chatty||[])]);
+const baseG=g=>g.replace(/\d|_/g,'');
+function itemDistract(q,pool,n){ // items not sharing sound with q and whose word lacks q's letters
+  const ok=o=>sk(o)!==sk(q)&&o.g!==q.g&&!o.w.includes(baseG(q.g));
+  const a=shuffle(pool.filter(ok));const b=shuffle(allItems().filter(ok));
+  const out=[];for(const o of [...a,...b]){if(!out.some(x=>sk(x)===sk(o)||x.w===o.w))out.push(o);if(out.length>=n)break}
+  return out;
+}
+
+/* ---- sound-card games ---- */
+const sg={
+ hear:items=>()=>shuffle(items).slice(0,ROUNDS).map(q=>{
+   const g=[...new Set(itemDistract(q,items,8).map(o=>o.g))].filter(x=>x!==q.g&&baseG(x)!==baseG(q.g)).slice(0,2);
+   return {prompt:'Which letters make this sound?',visual:'<div class="q" style="cursor:pointer">🔊</div>',tapVisual:1,play:()=>saySound(sk(q)),opts:shuffle([q.g,...g]).map(x=>({h:x,v:x})),ans:q.g}}),
+ pic:items=>()=>shuffle(items).slice(0,ROUNDS).map(q=>({prompt:'Which picture has this sound?',visual:'<div class="q" style="cursor:pointer">🔊</div>',tapVisual:1,play:()=>saySound(sk(q)),cls:'em',
+   opts:shuffle([q,...itemDistract(q,items,2)]).map(x=>({h:x.pic,v:x.w})),ans:q.w,after:()=>sayWord(q.w)})),
+ find:items=>()=>shuffle(items).slice(0,ROUNDS).map(q=>{
+   const g=[...new Set(itemDistract(q,items,8).map(o=>o.g))].slice(0,2);
+   return {prompt:'Which letters are in this word?',visual:`<div class="q">${q.pic}</div><div class="qword" style="font-size:clamp(34px,8vw,60px)">${q.w}</div>`,play:()=>sayWord(q.w),tapVisual:1,opts:shuffle([q.g,...g]).map(x=>({h:x,v:x})),ans:q.g}}),
+};
+/* ---- word games ---- */
+const partPool=words=>[...new Set(words.flatMap(w=>w.parts))];
+const wg={
+ read:words=>()=>shuffle(words).slice(0,ROUNDS).map(q=>({prompt:'Read the word. Find the picture!',visual:`<div class="qword" style="cursor:pointer">${q.w}</div>`,tapVisual:1,play:()=>sayWord(q.w),cls:'em',opts:strOpts(q.w,words.map(x=>x.w)).map(o=>({h:words.find(x=>x.w===o.v).pic,v:o.v})),ans:q.w})),
+ pic:words=>()=>shuffle(words).slice(0,ROUNDS).map(q=>({prompt:'What is the word?',visual:`<div class="q">${q.pic}</div>`,say:q.w,cls:'sm',opts:strOpts(q.w,words.map(x=>x.w)).map(o=>({h:o.v,v:o.v})),ans:q.w})),
+ blend:words=>()=>shuffle(words).slice(0,ROUNDS).map(q=>({prompt:'Fred says the sounds. What is the word?',visual:'<div class="q" style="cursor:pointer">🐸</div>',tapVisual:1,play:()=>blendSay(q.parts),cls:'sm',opts:strOpts(q.w,words.map(x=>x.w)).map(o=>({h:o.v,v:o.v})),ans:q.w,after:()=>sayWord(q.w)})),
+ miss:words=>()=>shuffle(words.filter(w=>w.parts.length>=2)).slice(0,ROUNDS).map(q=>{
+   const k=R(0,q.parts.length-1),pool=partPool(words);const ans=q.parts[k];
+   const vis=`<div class="q" style="font-size:clamp(60px,12vw,100px)">${q.pic}</div><div class="letters" style="margin-top:8px">${q.parts.map((p,i)=>`<div class="lt ${i===k?'blank':''}"><div class="l">${i===k?'?':disp(p)}</div></div>`).join('')}</div>`;
+   return {prompt:'Which sound is missing?',visual:vis,say:q.w,opts:strOpts(ans,pool.filter(x=>disp(x)!==disp(ans))).map(o=>({h:disp(o.v),v:o.v})),ans,after:()=>sayWord(q.w)}}),
+};
+function buildGame(words){
+  const qs=shuffle(words).slice(0,5);let n=0,score=0;const d=el('<div class="game"></div>');
+  function show(){
+    if(n>=qs.length){d.innerHTML=`<div class="cheer">🎉 Brilliant! 🎉</div><div class="q">🏆</div><div class="row2"><button class="btn go" style="background:#43a82b" id="again">Play again</button><button class="btn go" style="background:#8453e0" id="bk2">⬅ Back</button></div>`;confetti(40);beep(true);addStar(3);$('#again').onclick=rerun;$('#bk2').onclick=back;return}
+    const q=qs[n];let pos=0;
+    d.innerHTML=`<div class="prog"><i style="width:${n/qs.length*100}%"></i></div><div class="prompt" id="pr">Build the word! 🔊</div><div class="q">${q.pic}</div><div class="letters" id="slots">${q.parts.map(()=>'<div class="lt blank"><div class="l">&nbsp;</div></div>').join('')}</div><div class="letters" id="tray"></div>`;
+    $('#pr').onclick=()=>sayWord(q.w);setTimeout(()=>sayWord(q.w),350);
+    const slots=[...d.querySelectorAll('#slots .lt')];
+    shuffle(q.parts.map((p,i)=>({p,i}))).forEach(t=>{
+      const b=el(`<div class="lt"><div class="l">${disp(t.p)}</div></div>`);
+      b.onclick=()=>{
+        if(b.dataset.used)return;
+        if(t.p===q.parts[pos]){b.dataset.used=1;b.style.opacity=.2;saySound(t.p);const s=slots[pos];s.classList.remove('blank');s.classList.add('filled');s.firstChild.textContent=disp(t.p);pos++;
+          if(pos===q.parts.length){beep(true);confetti(12);setTimeout(()=>sayWord(q.w),500);n++;setTimeout(show,1800)}}
+        else{beep(false);b.classList.add('on');b.style.animation='shake .4s';setTimeout(()=>{b.style.animation='';b.classList.remove('on')},450)}
+      };
+      $('#tray').appendChild(b);
+    });
+  }
+  frame('Build the word 🧱',d,{bg:'#e6f9dc'});show();
+}
+/* memory */
+function memory(title,pairs,sm){
+  const cards=shuffle(pairs.flatMap(p=>[{id:p.id,h:p.a},{id:p.id,h:p.b}]));
+  const d=el('<div class="game"></div>');const nC=cards.length;
+  const cc=nC<=8?4:nC<=12?4:5;
+  d.innerHTML=`<div class="prompt" style="cursor:default">Find the matching pairs! 🃏</div><div class="mem" style="grid-template-columns:repeat(${cc},1fr)">${cards.map((c,i)=>`<div class="mc ${sm?'sm':''}" data-i="${i}">❓</div>`).join('')}</div>`;
+  let first=null,lock=false,found=0,moves=0;
+  d.querySelectorAll('.mc').forEach(m=>m.onclick=()=>{
+    const i=+m.dataset.i;if(lock||m.classList.contains('up')||m.classList.contains('ok'))return;
+    m.classList.add('up');m.innerHTML=cards[i].h;
+    if(sayCard)sayCard(cards[i]);
+    if(first===null){first=i;return}
+    moves++;const a=first;first=null;
+    const ma=d.querySelectorAll('.mc')[a];
+    if(cards[a].id===cards[i].id){found++;[ma,m].forEach(x=>{x.classList.remove('up');x.classList.add('ok')});beep(true);
+      if(found===pairs.length){setTimeout(()=>{confetti(40);addStar(3);d.innerHTML=`<div class="cheer">🎉 You did it! 🎉</div><div class="q">🏆</div><div class="prompt" style="cursor:default">${moves} tries</div><div class="row2"><button class="btn go" style="background:#43a82b" id="again">Play again</button><button class="btn go" style="background:#8453e0" id="bk2">⬅ Back</button></div>`;$('#again').onclick=rerun;$('#bk2').onclick=back},700)}}
+    else{lock=true;beep(false);setTimeout(()=>{[ma,m].forEach(x=>{x.classList.remove('up');x.textContent='❓'});lock=false},900)}
+  });
+  frame(title,d,{bg:'#f0e8ff'});
+}
+let sayCard=null;
+function memItems(items){return ()=>{const q=shuffle(items.filter((x,i,a)=>a.findIndex(y=>sk(y)===sk(x))===i)).slice(0,6);sayCard=c=>{};memory('Match the sound 🃏',q.map(x=>({id:sk(x),a:`<span style="color:#d63a3a">${x.g}</span>`,b:x.pic})))}}
+function memWords(words){return ()=>{const q=shuffle(words).slice(0,6);sayCard=c=>{};memory('Match the word 🃏',q.map(x=>({id:x.w,a:x.w,b:x.pic})),0)}}
+function memTricky(words){return ()=>{const q=shuffle(words).slice(0,6);sayCard=c=>sayWord(c.id);memory('Tricky word pairs 🃏',q.map(x=>({id:x,a:x,b:x})),1)}}
+/* tricky word games */
+const tg={
+ hear:ws=>()=>shuffle(ws).slice(0,ROUNDS).map(q=>({prompt:'Which word do you hear?',visual:'<div class="q" style="cursor:pointer">🔊</div>',tapVisual:1,play:()=>sayWord(q),cls:'sm',opts:strOpts(q,ws).map(o=>({h:o.v,v:o.v})),ans:q})),
+ splat:ws=>()=>shuffle(ws).slice(0,ROUNDS).map(q=>({prompt:'SPLAT the word!',visual:'<div class="q" style="cursor:pointer">🪰</div>',tapVisual:1,play:()=>sayWord(q),cls:'sm',cols:3,opts:shuffle([q,...shuffle(ws.filter(x=>x!==q)).slice(0,5)]).map(o=>({h:o,v:o})),ans:q})),
+};
+
+/* =================== GAME MENU =================== */
+function gameMenu(sec){
+  const D=SETS[S.set];const L=[];
+  const itemsFor=s=>s==='all'?[...(D.sounds||[]),...(D.special||[]),...(D.chatty||[])]:D[s]||[];
+  const addSound=(items,tag)=>{if(items.length<2)return;
+    L.push(['🔊','Which letters?'+tag,()=>nav(()=>quiz('Which letters? 🔊',sg.hear(items)))]);
+    L.push(['🖼️','Sound to picture'+tag,()=>nav(()=>quiz('Sound to picture 🖼️',sg.pic(items)))]);
+    L.push(['🔎','Find the letters'+tag,()=>nav(()=>quiz('Find the letters 🔎',sg.find(items)))]);
+    if(items.length>=4)L.push(['🃏','Memory match'+tag,()=>nav(memItems(items))])};
+  const addWords=()=>{const w=D.fred;
+    L.push(['👀','Read & find',()=>nav(()=>quiz('Read the word 👀',wg.read(w)))]);
+    L.push(['🖼️','What is the word?',()=>nav(()=>quiz('What is the word? 🖼️',wg.pic(w)))]);
+    L.push(['🧱','Build the word',()=>nav(()=>buildGame(w))]);
+    L.push(['🧩','Missing sound',()=>nav(()=>quiz('Missing sound 🧩',wg.miss(w)))]);
+    L.push(['🐸','Fred says…',()=>nav(()=>quiz('Fred says… 🐸',wg.blend(w)))]);
+    L.push(['🃏','Word memory',()=>nav(memWords(w))])};
+  const addTricky=()=>{const w=D.tricky;
+    L.push(['👂','Which word?',()=>nav(()=>quiz('Which word? 👂',tg.hear(w)))]);
+    L.push(['🪰','SPLAT!',()=>nav(()=>quiz('Splat the word! 🪰',tg.splat(w)))]);
+    L.push(['🃏','Tricky pairs',()=>nav(memTricky(w))])};
+  if(sec==='all'){const it=itemsFor('all');addSound(it,'');addWords();addTricky()}
+  else if(sec==='fred')addWords();
+  else if(sec==='tricky')addTricky();
+  else addSound(itemsFor(sec),'');
+  L.forEach((x,i)=>x[3]=['#43a82b','#f0509a','#3aa0e0','#ff9a1f','#8453e0','#2fb86a'][i%6]);
+  const nm={all:'Games',fred:'Fred Talk games',tricky:'Tricky word games',sounds:'Letter games',special:'Special Friends games',chatty:'Chatty Friends games'}[sec];
+  frame(nm+' 🎮',menuGrid(L),{bg:'#f0e8ff'});
+}
+
+/* =================== STORIES =================== */
+function library(){
+  const items=STORIES.map((s,i)=>[s.pic,s.title,()=>nav(()=>storyScreen(i)),SETCOL[i],'Key Set '+s.set+(S.read[i]?' ✅':'')]);
+  frame('Story Library 📖',menuGrid(items),{bg:'#fff3d6'});
+}
+function storyScreen(i){
+  const st=STORIES[i];let p=-1;
+  const d=el('<div class="sbook"></div>');
+  function show(){
+    if(p<0){d.innerHTML=`<div class="spic cover">${st.pic}</div><div class="stxt">${st.title}</div><div class="prompt" style="cursor:default">A Key Set ${st.set} story</div><button class="btn go" style="background:#ff9a1f" id="st">📖 Start reading</button>`;$('#st').onclick=()=>{p=0;show()};return}
+    if(p>=st.pages.length){
+      if(!S.read[i]){S.read[i]=1;store.set('read',S.read);addStar(3)}
+      d.innerHTML=`<div class="cheer">The End! 🎉</div><div class="spic">🏆</div><div class="prompt" style="cursor:default">You read the whole book!</div><div class="row2"><button class="btn go" style="background:#43a82b" id="ag">Read again</button><button class="btn go" style="background:#8453e0" id="bk2">⬅ Library</button></div>`;confetti(40);beep(true);
+      $('#ag').onclick=()=>{p=0;show()};$('#bk2').onclick=back;return}
+    const pg=st.pages[p];
+    d.innerHTML=`<div class="dots">${st.pages.map((_,k)=>`<i class="${k<=p?'on':''}"></i>`).join('')}</div><div class="spic">${pg.pic}</div><div class="stxt">${pg.text.split(' ').map(w=>`<span class="sw" data-w="${w.replace(/[^A-Za-z']/g,'')}">${w}</span>`).join(' ')}</div>
+    <div class="row2"><button class="btn go" style="background:#999" id="pv">⬅</button><button class="btn go" style="background:#3aa0e0" id="rd">🔊 Read to me</button><button class="btn go" style="background:#43a82b" id="nx">${p===st.pages.length-1?'Finish ✔':'Next ➡'}</button></div><div class="tip">Tap any word to hear it! 👆</div>`;
+    d.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{s.classList.add('on');setTimeout(()=>s.classList.remove('on'),600);sayWord(s.dataset.w.toLowerCase())});
+    $('#rd').onclick=()=>tts(pg.text,.7);
+    $('#pv').onclick=()=>{p=Math.max(-1,p-1);show()};$('#nx').onclick=()=>{p++;show()};
+  }
+  frame(st.title,d,{bg:'#fff3d6'});show();
+}
+
+/* =================== MATHS =================== */
+const EMO=['🍎','🐥','⭐','🚗','🌸','🐟','🎈','🍪','🐞','🦋','🍓','⚽'];
+function grp(e,n,strike=0){let rows='';for(let i=0;i<n;i+=5){rows+='<div>'+Array.from({length:Math.min(5,n-i)},(_,k)=>`<span class="${i+k<strike?'x':''}">${e}</span>`).join('')+'</div>'}return `<div class="grp">${rows}</div>`}
+function numOpts(ans,lo,hi,n=3){const s=new Set([ans]);let guard=0;while(s.size<n&&guard++<60){const c=Math.random()<.6?ans+pick([-2,-1,1,2]):R(lo,hi);if(c>=lo&&c<=hi)s.add(c)}return shuffle([...s]).map(x=>({h:String(x),v:x}))}
+function tenframe(a,col='#ff5a2c'){let s='<svg viewBox="0 0 200 84" width="260">';for(let i=0;i<10;i++){const x=(i%5)*40,y=Math.floor(i/5)*40;s+=`<rect x="${x+2}" y="${y+2}" width="36" height="36" fill="#fff" stroke="#3aa0e0" stroke-width="3" rx="6"/>`;if(i<a)s+=`<circle cx="${x+20}" cy="${y+20}" r="13" fill="${col}"/>`}return s+'</svg>'}
+function clock(h,m){const pt=(ang,len)=>[100+len*Math.sin(ang*Math.PI/180),100-len*Math.cos(ang*Math.PI/180)];let s='<svg viewBox="0 0 200 200" width="210"><circle cx="100" cy="100" r="94" fill="#fff" stroke="#3aa0e0" stroke-width="8"/>';for(let i=1;i<=12;i++){const [x,y]=pt(i*30,74);s+=`<text x="${x}" y="${y+9}" font-size="26" font-weight="bold" text-anchor="middle" fill="#2b2b4a" font-family="Comic Sans MS">${i}</text>`}
+ const [hx,hy]=pt((h%12)*30+m*.5,46),[mx,my]=pt(m*6,70);
+ return s+`<line x1="100" y1="100" x2="${hx}" y2="${hy}" stroke="#ff5a2c" stroke-width="10" stroke-linecap="round"/><line x1="100" y1="100" x2="${mx}" y2="${my}" stroke="#2b2b4a" stroke-width="6" stroke-linecap="round"/><circle cx="100" cy="100" r="8" fill="#2b2b4a"/></svg>`}
+const SHAPES={circle:'<circle cx="60" cy="60" r="50"/>',square:'<rect x="12" y="12" width="96" height="96"/>',rectangle:'<rect x="5" y="28" width="110" height="64"/>',triangle:'<polygon points="60,8 114,106 6,106"/>',pentagon:'<polygon points="60,6 112,44 92,106 28,106 8,44"/>',hexagon:'<polygon points="32,10 88,10 114,60 88,110 32,110 6,60"/>',star:'<polygon points="60,4 74,44 116,46 82,72 94,114 60,90 26,114 38,72 4,46 46,44"/>'};
+const SIDES={triangle:3,square:4,rectangle:4,pentagon:5,hexagon:6};
+const shapeSvg=(k,c)=>`<svg viewBox="0 0 120 120" width="190" fill="${c}" stroke="#2b2b4a" stroke-width="5" stroke-linejoin="round">${SHAPES[k]}</svg>`;
+const coinSvg=v=>{const cu=v<5;return `<svg viewBox="0 0 80 80" width="78"><circle cx="40" cy="40" r="36" fill="${cu?'#d98a4b':'#d3d9de'}" stroke="${cu?'#8c4f1f':'#7d8790'}" stroke-width="5"/><text x="40" y="51" font-size="30" font-weight="bold" text-anchor="middle" fill="#2b2b4a" font-family="Comic Sans MS">${v}p</text></svg>`};
+const numQ=(prompt,vis,ans,lo,hi,say)=>({prompt,visual:vis,say,opts:numOpts(ans,lo,hi),ans});
+const BOOKS=[
+ ['Counting','#43a82b',[
+  ['🍎','Count to 5',()=>{const n=R(1,5),e=pick(EMO);return numQ('How many can you count?',`<div class="mv">${grp(e,n)}</div>`,n,1,6,'How many can you count?')}],
+  ['🔟','Count to 10',()=>{const n=R(4,10),e=pick(EMO);return numQ('How many can you count?',`<div class="mv">${grp(e,n)}</div>`,n,1,11,'How many can you count?')}],
+  ['2️⃣0️⃣','Count to 20',()=>{const n=R(11,20),e=pick(EMO);return numQ('How many can you count?',`<div class="mv">${grp(e,n)}</div>`,n,8,20,'How many can you count?')}],
+  ['👂','Number detective',()=>{const n=R(0,20);return {prompt:'Tap the number you hear',visual:'<div class="q" style="cursor:pointer">🔊</div>',tapVisual:1,play:()=>tts(String(n),.8),opts:numOpts(n,0,20),ans:n}}],
+ ]],
+ ['Number order','#8453e0',[
+  ['➡️','What comes next?',()=>{const a=R(1,17);return {prompt:'What comes next?',visual:`<div class="seq"><b>${a}</b><b>${a+1}</b><b>${a+2}</b><b class="q2">?</b></div>`,opts:numOpts(a+3,0,21),ans:a+3}}],
+  ['❓','Missing number',()=>{const a=R(1,18);return {prompt:'Find the missing number',visual:`<div class="seq"><b>${a}</b><b class="q2">?</b><b>${a+2}</b></div>`,opts:numOpts(a+1,0,21),ans:a+1}}],
+  ['🔝','Biggest or smallest',()=>{const s=shuffle(Array.from({length:21},(_,i)=>i)).slice(0,3),big=Math.random()<.5;const a=big?Math.max(...s):Math.min(...s);return {prompt:big?'Tap the BIGGEST number':'Tap the SMALLEST number',say:big?'Tap the biggest number':'Tap the smallest number',opts:s.map(x=>({h:String(x),v:x})),ans:a}}],
+  ['🦘','Counting in 2s, 5s, 10s',()=>{const st=pick([2,5,10]),len=4,start=st,seq=Array.from({length:len+1},(_,i)=>start*(i+1)),k=R(1,len);const ans=seq[k];return {prompt:`Count in ${st}s. What is missing?`,visual:`<div class="seq">${seq.map((x,i)=>`<b class="${i===k?'q2':''}">${i===k?'?':x}</b>`).join('')}</div>`,say:`Count in ${st}s`,opts:numOpts(ans,0,60),ans}}],
+ ]],
+ ['Compare','#ff9a1f',[
+  ['⚖️','More or fewer?',()=>{let a=R(1,9),b=R(1,9);while(a===b)b=R(1,9);const more=Math.random()<.5,e=pick(EMO),f=pick(EMO);const ans=more?(a>b?0:1):(a<b?0:1);return {prompt:more?'Tap the group with MORE':'Tap the group with FEWER',say:more?'Tap the group with more':'Tap the group with fewer',cls:'em',cols:2,opts:[{h:grp(e,a),v:0},{h:grp(f,b),v:1}],ans}}],
+  ['📏','Longer or shorter?',()=>{let a=R(30,95),b=R(30,95);while(Math.abs(a-b)<12)b=R(30,95);const lon=Math.random()<.5,ans=lon?(a>b?0:1):(a<b?0:1);return {prompt:lon?'Tap the LONGER one':'Tap the SHORTER one',say:lon?'Tap the longer one':'Tap the shorter one',cols:1,opts:[{h:`<div class="bar" style="width:${a}%;background:#ff6b6b"></div>`,v:0},{h:`<div class="bar" style="width:${b}%;background:#3aa0e0"></div>`,v:1}],ans}}],
+ ]],
+ ['Adding & taking away','#f0509a',[
+  ['➕','Adding to 5',()=>{const a=R(1,4),b=R(1,5-a),e=pick(EMO);return numQ(`${a} + ${b} = ?`,`<div class="mv">${grp(e,a)}<span class="op">+</span>${grp(e,b)}</div>`,a+b,0,6,`${a} plus ${b}`)}],
+  ['➕','Adding to 10',()=>{const a=R(1,9),b=R(1,10-a),e=pick(EMO);return numQ(`${a} + ${b} = ?`,`<div class="mv">${grp(e,a)}<span class="op">+</span>${grp(e,b)}</div>`,a+b,0,11,`${a} plus ${b}`)}],
+  ['➖','Taking away to 5',()=>{const t=R(2,5),k=R(1,t-1),e=pick(EMO);return numQ(`${t} − ${k} = ?`,`<div class="mv">${grp(e,t,k)}</div>`,t-k,0,5,`${t} take away ${k}`)}],
+  ['➖','Taking away to 10',()=>{const t=R(4,10),k=R(1,t-1),e=pick(EMO);return numQ(`${t} − ${k} = ?`,`<div class="mv">${grp(e,t,k)}</div>`,t-k,0,10,`${t} take away ${k}`)}],
+  ['🔟','Number bonds to 10',()=>{const a=R(0,10);return numQ(`${a} + ? = 10`,`<div class="mv">${tenframe(a)}</div>`,10-a,0,10,`${a} and how many more makes 10`)}],
+  ['👯','Doubles',()=>{const n=R(1,6),e=pick(EMO);return numQ(`Double ${n} = ?`,`<div class="mv">${grp(e,n)}<span class="op">+</span>${grp(e,n)}</div>`,2*n,1,13,`Double ${n}`)}],
+  ['✂️','Halves',()=>{const n=2*R(1,5),e=pick(EMO);return numQ(`Half of ${n} = ?`,`<div class="mv">${grp(e,n)}</div>`,n/2,0,6,`Half of ${n}`)}],
+  ['📖','Story sums',()=>{const a=R(2,8),b=R(1,Math.min(a-1,4)),e=pick(['🍎','🐟','🍪','🎈']),nm=pick(['Fred','Mia','Sam','Ava','Leo']),add=Math.random()<.5;const ans=add?a+b:a-b;
+    return numQ(add?`${nm} has ${a}. Then ${b} more. How many now?`:`${nm} has ${a}. ${b} go away. How many left?`,`<div class="mv">${grp(e,a)}</div>`,ans,0,12,add?`${nm} has ${a}. Then ${b} more. How many now?`:`${nm} has ${a}. ${b} go away. How many are left?`)}],
+ ]],
+ ['Shapes & patterns','#3aa0e0',[
+  ['🔺','Name the shape',()=>{const k=pick(Object.keys(SHAPES));return {prompt:'What shape is this?',visual:`<div class="mv">${shapeSvg(k,pick(['#ffd23f','#7fd0ff','#ff9aa8','#9be37a','#c9a8ff']))}</div>`,say:'What shape is this?',cls:'sm',opts:strOpts(k,Object.keys(SHAPES)).map(o=>({h:o.v,v:o.v})),ans:k}}],
+  ['📐','How many sides?',()=>{const k=pick(Object.keys(SIDES));return {prompt:'How many sides?',visual:`<div class="mv">${shapeSvg(k,pick(['#ffd23f','#7fd0ff','#ff9aa8','#9be37a']))}</div>`,say:'How many sides does this shape have?',opts:numOpts(SIDES[k],2,7),ans:SIDES[k]}}],
+  ['🎨','Colour patterns',()=>{const c=shuffle(['🔴','🔵','🟡','🟢','🟣','🟠']).slice(0,3),pat=pick([[0,1],[0,1,1],[0,1,2]]);const seq=Array.from({length:7},(_,i)=>c[pat[i%pat.length]]);const sh=seq.slice(0,6),ans=seq[6];return {prompt:'What comes next in the pattern?',visual:`<div class="seq">${sh.map(x=>`<b style="min-width:56px;font-size:clamp(28px,6vw,44px)">${x}</b>`).join('')}<b class="q2" style="min-width:56px">?</b></div>`,say:'What comes next in the pattern?',cls:'em',opts:shuffle(c).map(x=>({h:x,v:x})),ans}}],
+ ]],
+ ['Time & money','#2fb86a',[
+  ['🕐',"O'clock",()=>{const h=R(1,12);return {prompt:'What time is it?',visual:`<div class="mv">${clock(h,0)}</div>`,say:'What time is it?',cls:'sm',opts:numOpts(h,1,12).map(o=>({h:`${o.v} o'clock`,v:o.v})),ans:h}}],
+  ['🕜','Half past',()=>{const h=R(1,12);return {prompt:'What time is it?',visual:`<div class="mv">${clock(h,30)}</div>`,say:'What time is it?',cls:'sm',opts:numOpts(h,1,12).map(o=>({h:`half past ${o.v}`,v:o.v})),ans:h}}],
+  ['🪙','Counting coins',()=>{const n=R(2,4);let coins=[],tot=0;for(let i=0;i<n;i++){const c=pick([1,1,2,5,10]);if(tot+c<=20){coins.push(c);tot+=c}}if(!coins.length){coins=[2,1];tot=3}const ans=tot;return {prompt:'How much money?',visual:`<div class="mv">${coins.map(coinSvg).join('')}</div>`,say:'How much money is this?',cls:'sm',opts:numOpts(ans,1,25).map(o=>({h:o.v+'p',v:o.v})),ans}}],
+ ]]
+];
+function mathsMenu(){
+  const d=el('<div></div>');
+  BOOKS.forEach(([grpName,col,bks])=>{
+    d.appendChild(el(`<div class="hd" style="color:${col}">${grpName}</div>`));
+    d.appendChild(menuGrid(bks.map(b=>{const id=b[1];const best=S.best['m:'+id];return [b[0],b[1],()=>nav(()=>quiz(b[0]+' '+b[1],()=>Array.from({length:10},()=>b[2]()),{key:'m:'+id,bg:'#e3f4ff'})),col,best!=null?'⭐ best '+best+'/10':'new!']})));
+  });
+  frame('Maths 🔢',d,{bg:'#e3f4ff'});
+}
+
+/* =================== PARENT PANEL =================== */
+function parentPanel(){
+  const m=$('#modal');
+  m.innerHTML=`<div class="modal"><div class="panel"><h2>👨‍👩‍👦 Grown-up corner</h2>
+  <p>Record <b>your own voice</b> for sounds and words: turn on Record mode, open a card screen (or Tricky Words) and tap a card to record 1.5 seconds.</p>
+  <button class="btn ${S.recMode?'on':''}" id="rm">${S.recMode?'⏺ Record mode is ON (tap to turn off)':'🎙 Turn on Record mode'}</button>
+  <button class="btn" style="background:#ff9a1f" id="rs">Reset stars</button>
+  <button class="btn" style="background:#999" id="cl">Delete my recordings</button>
+  <button class="btn" style="background:#43a82b" id="cx">Close</button></div></div>`;
+  $('#rm').onclick=()=>{S.recMode=!S.recMode;m.innerHTML='';if(S.recMode)alert('Record mode ON. Tap any sound or tricky-word card to record your voice. Turn it off here when done.')};
+  $('#rs').onclick=()=>{S.stars=0;store.set('stars',0);m.innerHTML='';rerun()};
+  $('#cl').onclick=()=>{S.recs={};store.set('recs',{});m.innerHTML=''};
+  $('#cx').onclick=()=>m.innerHTML='';
+}
+nav(homeScreen);
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

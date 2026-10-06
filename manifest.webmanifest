@@ -1,0 +1,10 @@
+{
+  "name": "Fred's Phonics Adventure",
+  "short_name": "Fred Phonics",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#e3f4ff",
+  "theme_color": "#43a82b",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}
