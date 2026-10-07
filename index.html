@@ -202,6 +202,12 @@ const SETS={
 const SETCOL=['#43a82b','#8453e0','#3aa0e0','#ff9a1f','#f0509a','#2fb86a','#e6397c','#ff6b6b','#a67cf0','#ffa534'];
 
 /* =================== STORIES =================== */
+/* ---- School Speed Sounds Set 2 and 3 (home use only: remove before selling) ---- */
+const SL=(g,pic,w,p,snd)=>({g,pic,w,p,snd});
+const SCHOOL={
+ 2:[SL('ay','🎮','play','may I play?'),SL('ee','👀','see','what can you see?'),SL('igh','🦅','high','fly high'),SL('ow','❄️','snow','blow the snow'),SL('oo','🦁','zoo','poo at the zoo'),SL('oo','📖','book','look at a book','oo2'),SL('ar','🚗','car','start the car'),SL('or','🚪','door','shut the door'),SL('air','🎡','fair','that’s not fair'),SL('ir','💃','twirl','whirl and twirl'),SL('ou','📢','shout','shout it out'),SL('oy','🧸','toy','toy for a boy')],
+ 3:[SL('ea','🍵','tea','cup of tea'),SL('oi','🪙','coin','spoil the boy'),SL('a_e','🎂','cake','make a cake'),SL('i_e','😁','smile','nice smile'),SL('o_e','📱','phone','phone home'),SL('u_e','🐘','huge','huge brute'),SL('aw','🌅','dawn','yawn at dawn'),SL('are','🤝','share','care and share'),SL('ur','👛','purse','nurse with a purse'),SL('er','✉️','letter','a better letter'),SL('ow','🐮','cow','brown cow','ow2'),SL('ai','🌧️','rain','snail in the rain'),SL('oa','⛵','boat','goat in a boat'),SL('ew','🍲','stew','chew the stew'),SL('ire','🔥','fire','fire, fire!'),SL('ear','👂','ear','hear with your ear'),SL('ure','🧼','pure','sure it’s pure')]
+};
 const P=(pic,text)=>({pic,text});
 const STORIES=[
  {set:1,title:'Zip Sits in the Sun',pic:'🐸',pages:[P('🐸','Zip is a frog.'),P('☀️','Zip sits in the sun.'),P('🐞','A bug is on a log.'),P('🐸','Zip can hop. Hop, hop, hop!'),P('🐟','Zip sees a fish in the pond.'),P('🌙','Zip is in bed. Night, night!')]},
@@ -234,7 +240,19 @@ function pickVoice(){
   gb.sort((a,b)=>nice(b)-nice(a));
   voice=gb.find(v=>/serena|kate|stephanie|google uk english female|martha|hazel|susan|libby|sonia/i.test(v.name))||gb.find(v=>/daniel|arthur|oliver|george|ryan/i.test(v.name))||gb[0]||vs.find(v=>/^en/i.test(v.lang))||null}
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
-function tts(text,rate=.75){try{
+/* ---- "School words" switch (home use only: remove before selling) ---- */
+const schoolOn=()=>store.get('schoolWords',false);
+const SW=[[/Zip/g,'Fred'],[/Blend Time/g,'Fred Talk'],[/Sound Buddies/g,'Special Friends'],[/Talking Teams/g,'Chatty Friends'],[/Tricky Words/g,'Red Words'],[/Tricky words/g,'Red words'],[/zip/g,'fred']];
+const T=s=>{if(!schoolOn())return s;for(const [a,b] of SW)s=s.replace(a,b);return s};
+const sgrp=(D,kind)=>{const sp=D.special||[],ch=D.chatty||[];if(kind==='sounds')return D.sounds||[];if(!schoolOn())return kind==='special'?sp:ch;const split=x=>x.g.includes('_');return kind==='special'?[...sp,...ch.filter(x=>!split(x))]:ch.filter(split)};
+let swBusy=false;
+function applySchoolText(){
+  if(swBusy)return;swBusy=true;
+  try{const root=document.getElementById('app');if(root&&schoolOn()){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const v=T(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v}}document.title=schoolOn()?'Fred’s Learning Adventure':'Zip’s Learning Adventure'}catch(e){}
+  swBusy=false;
+}
+document.addEventListener('DOMContentLoaded',()=>{try{new MutationObserver(applySchoolText).observe(document.getElementById('app'),{childList:true,subtree:true,characterData:true});applySchoolText()}catch(e){}});
+function tts(text,rate=.75){text=T(text);try{
   if(!voice||!/en[-_]GB/i.test(voice.lang))pickVoice(); /* iPhones often load voices late, so look again each time */
   speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);if(voice)u.voice=voice;u.lang='en-GB';u.rate=Math.max(.7,rate);u.pitch=1.05;speechSynthesis.speak(u)}catch(e){}}
 const voiceInfo=()=>{try{pickVoice()}catch(e){}return voice?`${voice.name} (${voice.lang})`:'none found'};
@@ -444,19 +462,41 @@ function homeScreen(){
 }
 function setPicker(){
   const items=Object.keys(SETS).map((k,i)=>['⭐'.repeat(Math.min(3,Math.ceil((+k)/4))),'Level '+k,()=>{S.set=+k;nav(setMenu)},SETCOL[i],SETS[k].name]);
+  items.unshift(['📘','School Speed Sounds',()=>nav(schoolMenu),'#e6397c','Set 2 and Set 3']);
   frame('Phonics 📚',menuGrid(items),{bg:'#e3f4ff'});
+}
+/* ---- School Speed Sounds (matches the school's chart) ---- */
+function schoolMenu(){
+  const it=[['2️⃣','Speed Sounds Set 2',()=>nav(()=>schoolCards(2)),'#3aa0e0','12 sounds'],['3️⃣','Speed Sounds Set 3',()=>nav(()=>schoolCards(3)),'#8453e0','17 sounds'],['🎮','Games: Set 2 + 3',()=>nav(()=>itemGames([...SCHOOL[2],...SCHOOL[3]],'Set 2 + 3 games')),'#43a82b','all 29 sounds']];
+  frame('School Speed Sounds 📘',menuGrid(it),{bg:'#ffe8f3'});
+}
+function schoolCards(n){
+  const list=SCHOOL[n];
+  const d=el('<div><div class="tip">Tap a card: you hear the sound, then the school phrase! 👆</div><div class="grid"></div><div class="playrow"><button class="btn" id="pg">🎮 Play games</button></div></div>');
+  list.forEach((it,i)=>{
+    const c=el(`<div class="card ${cols[i%6]}"><div class="pic">${it.pic}</div><div class="g">${disp(it.g)}</div><div class="w" style="font-size:clamp(13px,2.6vw,18px)">${it.p}</div></div>`);
+    c.onclick=()=>{if(S.recMode){record('s:'+sk(it),c);return}c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');saySound(sk(it));setTimeout(()=>tts(it.p,.75),1100)};
+    d.querySelector('.grid').appendChild(c);
+  });
+  d.querySelector('#pg').onclick=()=>nav(()=>itemGames(list,'Set '+n+' games'));
+  frame('Speed Sounds Set '+n,d,{bg:n===2?'#e3f4ff':'#f0e8ff'});
+}
+function itemGames(items,title){
+  const L=[['🔊','Which letters?',()=>nav(()=>quiz('Which letters? 🔊',sg.hear(items)))],['🖼️','Sound to picture',()=>nav(()=>quiz('Sound to picture 🖼️',sg.pic(items)))],['🔎','Find the letters',()=>nav(()=>quiz('Find the letters 🔎',sg.find(items)))],['🃏','Memory match',()=>nav(memItems(items))]];
+  L.forEach((x,i)=>x[3]=['#43a82b','#f0509a','#3aa0e0','#ff9a1f'][i]);
+  frame(title+' 🎮',menuGrid(L),{bg:'#f0e8ff'});
 }
 function setMenu(){
   const D=SETS[S.set];const it=[];
   if(D.sounds)it.push(['🔤','Letter Sounds',()=>nav(()=>cards('sounds')),'#43a82b']);
-  if(D.special)it.push(['💕','Sound Buddies',()=>nav(()=>cards('special')),'#f0509a']);
-  if(D.chatty)it.push(['💬','Talking Teams',()=>nav(()=>cards('chatty')),'#3aa0e0']);
+  if(sgrp(D,'special').length)it.push(['💕','Sound Buddies',()=>nav(()=>cards('special')),'#f0509a']);
+  if(sgrp(D,'chatty').length)it.push(['💬','Talking Teams',()=>nav(()=>cards('chatty')),'#3aa0e0']);
   it.push(['🐸','Blend Time',()=>nav(fredtalk),'#2fb86a'],['🔴','Tricky Words',()=>nav(tricky),'#ff6b6b'],['📖','Story',()=>nav(()=>storyScreen(S.set-1)),'#ff9a1f'],['🎮','Games',()=>nav(()=>gameMenu('all')),'#8453e0']);
   frame(`Level ${S.set}: ${D.name}`,menuGrid(it),{bg:'#e3f4ff'});
 }
 const TITLES={sounds:'Letter Sounds',special:'Sound Buddies',chatty:'Talking Teams'};
 function cards(kind){
-  const list=SETS[S.set][kind];
+  const list=sgrp(SETS[S.set],kind);
   const d=el('<div><div class="tip">Tap a card to hear it! 👆</div><div class="grid"></div><div class="playrow"><button class="btn" id="pg">🎮 Play games</button></div></div>');
   list.forEach((it,i)=>{
     const c=el(`<div class="card ${kind==='sounds'?cols[i%6]:kind==='special'?'c5':'c4'}"><div class="pic">${it.pic}</div><div class="g">${it.g}</div><div class="w">${it.w}</div></div>`);
@@ -611,7 +651,7 @@ const tg={
 /* =================== GAME MENU =================== */
 function gameMenu(sec){
   const D=SETS[S.set];const L=[];
-  const itemsFor=s=>s==='all'?[...(D.sounds||[]),...(D.special||[]),...(D.chatty||[])]:D[s]||[];
+  const itemsFor=s=>s==='all'?[...(D.sounds||[]),...(D.special||[]),...(D.chatty||[])]:sgrp(D,s);
   const addSound=(items,tag)=>{if(items.length<2)return;
     L.push(['🔊','Which letters?'+tag,()=>nav(()=>quiz('Which letters? 🔊',sg.hear(items)))]);
     L.push(['🖼️','Sound to picture'+tag,()=>nav(()=>quiz('Sound to picture 🖼️',sg.pic(items)))]);
@@ -735,7 +775,8 @@ const GUIDE=[
 ];
 function guideScreen(){
   const d=el('<div style="max-width:820px;margin:0 auto"></div>');
-  d.innerHTML=GUIDE.map(r=>`<div style="background:#fff;border-radius:20px;padding:12px 14px;margin-bottom:10px;border:3px solid #ffc933"><div style="font-size:22px;font-weight:bold;color:#c46a00">${r[0]} ${r[1]}</div><div style="font-size:17px;margin:4px 0">${r[2]}</div><div style="font-size:16px;background:#fff7d6;border-radius:12px;padding:6px 10px"><b>How to help:</b> ${r[3]}</div></div>`).join('')+
+  const rows=schoolOn()?GUIDE.map((r,i)=>i===4?['💕','Sound Buddies','Two or three letters that make one sound (sh, ch, ay, ee, igh).','Point to the line under the letters and say the sound once.']:i===5?['💬','Talking Teams','A split pair that makes one sound, like a_e in “cake” or i_e in “bike”.','Cover the e at the end, then uncover it and hear how the sound changes.']:r):GUIDE;
+  d.innerHTML=rows.map(r=>`<div style="background:#fff;border-radius:20px;padding:12px 14px;margin-bottom:10px;border:3px solid #ffc933"><div style="font-size:22px;font-weight:bold;color:#c46a00">${r[0]} ${r[1]}</div><div style="font-size:17px;margin:4px 0">${r[2]}</div><div style="font-size:16px;background:#fff7d6;border-radius:12px;padding:6px 10px"><b>How to help:</b> ${r[3]}</div></div>`).join('')+
   `<div style="background:#fff;border-radius:20px;padding:12px 14px;border:3px solid #3aa0e0;font-size:16px"><b>🌟 Top tips:</b> 5–10 minutes a day is plenty. Stop while it is still fun, always finish on a win, and read to your child every day too. If they get stuck, say the sounds together, then blend. Mixed up? Go back one level, with no pressure.<br><br><b>Words your school may use:</b> phoneme = a sound • grapheme = the letters for a sound • blending = Blend Time • digraph = Sound Buddies • vowel team = Talking Teams • common exception words = Tricky Words.</div>`;
   frame('Grown-ups’ Guide 👨‍👩‍👦',d,{bg:'#fff3d6'});
 }
@@ -751,12 +792,14 @@ function parentPanel(){
   <button class="btn ${S.recMode?'on':''}" id="rm">${S.recMode?'⏺ Record mode is ON (tap to turn off)':'🎙 Turn on Record mode'}</button>
   <p style="margin:6px 0"><b>Word voice:</b> ${voiceInfo()}${voiceIsBritish()?' ✅ British':' ⚠️ not British. On iPhone: Settings → Accessibility → Spoken Content → Voices → English → United Kingdom, then download Daniel, Kate or Serena. On Android: Settings → Text-to-speech → set English (United Kingdom).'}</p>
   <button class="btn" style="background:#3aa0e0" id="tv">🔊 Test the word voice</button>
+  <button class="btn" style="background:#8453e0" id="sw">${schoolOn()?'🏫 School words are ON (tap for Zip words)':'🏫 Use my school’s words (Fred, Fred Talk, Special Friends…)'}</button>
   <button class="btn" style="background:#2fb86a" id="hm">${store.get('noHuman',false)?'🔈 Using computer sounds (tap to use human sounds)':'🗣️ Using human sounds (tap to use computer sounds)'}</button>
   <button class="btn" style="background:#ff9a1f" id="rs">Reset stars</button>
   <button class="btn" style="background:#999" id="cl">Delete my recordings</button>
   <button class="btn" style="background:#43a82b" id="cx">Close</button>
   <p style="font-size:12px;color:#666">Credits: phoneme sound recordings from Wikimedia Commons (IPA audio by Peter Isotalo, Denelson83, Erutuon and others), licensed CC BY-SA 3.0 (one clip public domain). Trimmed, balanced and combined for this app; shared under the same licence. creativecommons.org/licenses/by-sa/3.0/</p></div></div>`;
   $('#rm').onclick=()=>{S.recMode=!S.recMode;m.innerHTML='';if(S.recMode)alert('Record mode ON. Tap any sound or tricky-word card to record your voice. Turn it off here when done.')};
+  $('#sw').onclick=()=>{store.set('schoolWords',!schoolOn());m.innerHTML='';H.length=0;nav(homeScreen);applySchoolText()};
   $('#gd').onclick=()=>{m.innerHTML='';nav(guideScreen)};
   $('#ss').onclick=()=>{m.innerHTML='';nav(studio)};
   $('#tv').onclick=()=>tts('Hello! Let us read the word schedule, and the word water.',.8);
