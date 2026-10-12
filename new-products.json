@@ -1,0 +1,128 @@
+﻿[
+    {
+        "name":  "Pro Lab shower gel (mixed)",
+        "category":  "Shower Gel \u0026 Soap",
+        "costPrice":  10.54,
+        "sellingPrice":  0,
+        "stock":  12
+    },
+    {
+        "name":  "Healthy Glow shower gel (mixed)",
+        "category":  "Shower Gel \u0026 Soap",
+        "costPrice":  11.01,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Zuri shower gel",
+        "category":  "Shower Gel \u0026 Soap",
+        "costPrice":  12.41,
+        "sellingPrice":  0,
+        "stock":  12
+    },
+    {
+        "name":  "Faster White body lotion (mixed)",
+        "category":  "Lotions",
+        "costPrice":  16.62,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Ivory Glow lotion (mixed)",
+        "category":  "Lotions",
+        "costPrice":  13.35,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Evelyn Cruiz body lotion",
+        "category":  "Lotions",
+        "costPrice":  13.35,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Evelyn Cruiz shower gel",
+        "category":  "Shower Gel \u0026 Soap",
+        "costPrice":  11.48,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Samchi body lotion",
+        "category":  "Lotions",
+        "costPrice":  13.35,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Elegant Essence body lotion",
+        "category":  "Lotions",
+        "costPrice":  13.35,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Skimmed 5.5 body lotion",
+        "category":  "Lotions",
+        "costPrice":  11.48,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Lemon Glow body lotion",
+        "category":  "Lotions",
+        "costPrice":  12.57,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Jhalak anti-mark cream",
+        "category":  "Face Moisturizers \u0026 Cream",
+        "costPrice":  7.51,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Skeenpoint lotion",
+        "category":  "Lotions",
+        "costPrice":  11.79,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "24k Gold essence oil soap",
+        "category":  "Shower Gel \u0026 Soap",
+        "costPrice":  9.84,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "G24 Gold glutathione soap",
+        "category":  "Shower Gel \u0026 Soap",
+        "costPrice":  9.84,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Glossy White face cream",
+        "category":  "Face Moisturizers \u0026 Cream",
+        "costPrice":  12.41,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Gluta White face cream",
+        "category":  "Face Moisturizers \u0026 Cream",
+        "costPrice":  10.23,
+        "sellingPrice":  0,
+        "stock":  6
+    },
+    {
+        "name":  "Disaar under-eye cream",
+        "category":  "Face Moisturizers \u0026 Cream",
+        "costPrice":  6.8,
+        "sellingPrice":  0,
+        "stock":  6
+    }
+]
